@@ -11,4 +11,5 @@ desktop.ini
 # Локальные логи и временные файлы
 *.log
 .tmp/
+.build/
 .zwork/

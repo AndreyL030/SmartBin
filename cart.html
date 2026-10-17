@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Корзина — SmartBin</title>
+    <meta name="description" content="Корзина SmartBin: состав заказа, доставка, оформление и подтверждение.">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='48' y2='48' gradientUnits='userSpaceOnUse'%3E%3Cstop offset='0' stop-color='%232563eb'/%3E%3Cstop offset='1' stop-color='%2310b981'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='48' height='48' rx='12' fill='url(%23g)'/%3E%3Crect x='13.5' y='15' width='21' height='3.4' rx='1.7' fill='%23fff'/%3E%3Cpath d='M16.2 19.6h15.6L30.2 35a4.2 4.2 0 0 1-4.17 3.8h-4.06A4.2 4.2 0 0 1 17.8 35l-1.6-15.4z' fill='%23fff'/%3E%3C/svg%3E">
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+<header class="site-header">
+    <div class="container header-inner">
+        <a class="logo-block" href="index.html" aria-label="SmartBin — на главную">
+            <svg class="logo-svg" width="40" height="40" viewBox="0 0 48 48" role="img" aria-label="Логотип SmartBin">
+                <defs>
+                    <linearGradient id="logoGradH" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
+                        <stop offset="0" stop-color="#2563eb"/>
+                        <stop offset=".55" stop-color="#06b6d4"/>
+                        <stop offset="1" stop-color="#10b981"/>
+                    </linearGradient>
+                </defs>
+                <rect width="48" height="48" rx="13" fill="url(#logoGradH)"/>
+                <rect x="13.5" y="15" width="21" height="3.4" rx="1.7" fill="#fff"/>
+                <path d="M19.5 15v-2.4a4.5 4.5 0 0 1 9 0V15" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/>
+                <path d="M16.2 19.6h15.6L30.2 35a4.2 4.2 0 0 1-4.17 3.8h-4.06A4.2 4.2 0 0 1 17.8 35l-1.6-15.4z" fill="#fff"/>
+                <path d="M24 22.4c2.9.6 4.4 2.6 4.4 4.8 0 2.3-1.7 4.3-4.4 4.8-2.7-.5-4.4-2.5-4.4-4.8 0-2.2 1.5-4.2 4.4-4.8z" fill="url(#logoGradH)"/>
+                <path d="M24 23.4v7.6" stroke="#fff" stroke-width="1.4" stroke-linecap="round"/>
+            </svg>
+            <span class="logo-word">Smart<b>Bin</b></span>
+        </a>
+
+        <button class="nav-toggle" type="button" aria-label="Открыть меню" aria-expanded="false" aria-controls="mainNav">
+            <span></span>
+        </button>
+
+        <nav class="nav-links" id="mainNav" aria-label="Основная навигация">
+            <a href="index.html">Главная</a>
+            <a href="catalog.html">Каталог</a>
+            <a href="support.html">Поддержка</a>
+        </nav>
+
+        <div class="header-actions">
+            <a class="cart-link" href="cart.html" aria-current="page">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <circle cx="9" cy="21" r="1"></circle>
+                    <circle cx="20" cy="21" r="1"></circle>
+                    <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                </svg>
+                Корзина
+                <span class="cart-badge" data-cart-count hidden>0</span>
+            </a>
+        </div>
+    </div>
+</header>
+
+<main class="container">
+    <div class="page-head">
+        <h1>Корзина</h1>
+        <p>Проверьте состав заказа и заполните данные для доставки. Корзина сохраняется в браузере — можно закрыть страницу и вернуться позже.</p>
+    </div>
+
+    <div class="cart-layout" data-cart-layout hidden>
+        <div>
+            <section class="panel">
+                <div class="panel__head">
+                    <h2>Ваши товары</h2>
+                    <button class="link-danger" type="button" data-clear-cart>Очистить корзину</button>
+                </div>
+                <div data-cart-items></div>
+            </section>
+
+            <form class="panel" id="checkoutForm" data-checkout-form novalidate style="margin-top:20px">
+                <div class="panel__head">
+                    <h2>Доставка и контакты</h2>
+                </div>
+
+                <div class="radio-row" role="radiogroup" aria-label="Способ получения">
+                    <label class="radio-card">
+                        <input type="radio" name="delivery" value="courier" checked>
+                        Курьером
+                    </label>
+                    <label class="radio-card">
+                        <input type="radio" name="delivery" value="pickup">
+                        Самовывоз со склада
+                    </label>
+                </div>
+
+                <div class="form-grid">
+                    <div class="field">
+                        <label for="customerName">Имя и фамилия</label>
+                        <input class="input" id="customerName" name="customerName" type="text" autocomplete="name" placeholder="Анна Смирнова">
+                        <span class="field-error">Укажите имя</span>
+                    </div>
+
+                    <div class="field">
+                        <label for="customerPhone">Телефон</label>
+                        <input class="input" id="customerPhone" name="customerPhone" type="tel" autocomplete="tel" placeholder="+7 900 000-00-00">
+                        <span class="field-error">Укажите телефон</span>
+                    </div>
+
+                    <div class="field field--full">
+                        <label for="customerEmail">Email <span class="hint">— необязательно, пришлём чек</span></label>
+                        <input class="input" id="customerEmail" name="customerEmail" type="email" autocomplete="email" placeholder="you@company.ru">
+                        <span class="field-error">Проверьте email</span>
+                    </div>
+
+                    <div class="field">
+                        <label for="customerCity">Город</label>
+                        <input class="input" id="customerCity" name="customerCity" type="text" autocomplete="address-level2" placeholder="Москва">
+                        <span class="field-error">Укажите город</span>
+                    </div>
+
+                    <div class="field">
+                        <label for="customerAddress">Адрес</label>
+                        <input class="input" id="customerAddress" name="customerAddress" type="text" autocomplete="street-address" placeholder="ул. Пресненская, 12, оф. 45">
+                        <span class="field-error">Укажите адрес</span>
+                    </div>
+
+                    <div class="field field--full">
+                        <label for="customerComment">Комментарий <span class="hint">— этаж, пропуск, удобное время</span></label>
+                        <textarea class="textarea" id="customerComment" name="customerComment" rows="3" placeholder="Позвоните за час до доставки"></textarea>
+                    </div>
+                </div>
+
+                <label class="checkbox-row">
+                    <input type="checkbox" name="agreement">
+                    <span>Согласен на обработку персональных данных и принимаю условия доставки и возврата.</span>
+                </label>
+            </form>
+        </div>
+
+        <aside class="panel sticky-summary">
+            <div class="panel__head">
+                <h2>Итого</h2>
+            </div>
+            <div data-cart-summary></div>
+            <button class="btn btn--grad btn--block" type="submit" form="checkoutForm" style="margin-top:16px">Оформить заказ</button>
+            <p style="margin-top:12px;font-size:.78rem;color:var(--text-muted);line-height:1.5">
+                Оплата — после подтверждения менеджером. Демо-проект: заказ сохраняется только в вашем браузере и никуда не отправляется.
+            </p>
+        </aside>
+    </div>
+
+    <div data-cart-empty hidden>
+        <div class="empty-state">
+            <div class="empty-state__icon" aria-hidden="true">🛒</div>
+            <h2>Корзина пуста</h2>
+            <p>Добавьте умную урну или запчасти — они сохранятся, даже если вы закроете страницу.</p>
+            <a class="btn btn--grad" href="catalog.html">Перейти в каталог</a>
+        </div>
+    </div>
+
+    <div class="panel" data-cart-success hidden style="margin-top:24px"></div>
+
+    <section class="panel" data-orders hidden style="margin-top:24px">
+        <div class="panel__head">
+            <h2>Последние заказы</h2>
+        </div>
+        <div data-orders-list></div>
+    </section>
+</main>
+
+<footer class="site-footer">
+    <div class="container">
+        <div class="footer-grid">
+            <div class="footer-brand">
+                <svg width="38" height="38" viewBox="0 0 48 48" role="img" aria-label="Логотип SmartBin">
+                    <defs>
+                        <linearGradient id="logoGradF" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
+                            <stop offset="0" stop-color="#2563eb"/>
+                            <stop offset=".55" stop-color="#06b6d4"/>
+                            <stop offset="1" stop-color="#10b981"/>
+                        </linearGradient>
+                    </defs>
+                    <rect width="48" height="48" rx="13" fill="url(#logoGradF)"/>
+                    <rect x="13.5" y="15" width="21" height="3.4" rx="1.7" fill="#fff"/>
+                    <path d="M19.5 15v-2.4a4.5 4.5 0 0 1 9 0V15" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/>
+                    <path d="M16.2 19.6h15.6L30.2 35a4.2 4.2 0 0 1-4.17 3.8h-4.06A4.2 4.2 0 0 1 17.8 35l-1.6-15.4z" fill="#fff"/>
+                </svg>
+                <div>SmartBin<small>Умная сортировка отходов</small></div>
+            </div>
+            <div class="footer-col">
+                <h3>Каталог</h3>
+                <ul>
+                    <li><a href="catalog.html">Все товары</a></li>
+                    <li><a href="catalog.html?filter=bin">Умные урны</a></li>
+                    <li><a href="catalog.html?filter=part">Запчасти и модули</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h3>Компания</h3>
+                <ul>
+                    <li><a href="index.html#how">Как это работает</a></li>
+                    <li><a href="support.html">Поддержка</a></li>
+                    <li><a href="cart.html">Корзина</a></li>
+                    <li><a href="mailto:hello@smartbin.ru">hello@smartbin.ru</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <span>© <span data-year>2026</span> SmartBin. Сделано в России.</span>
+            <span>Демо-проект: товары, цены и контакты вымышлены</span>
+        </div>
+    </div>
+</footer>
+
+<div class="toast-stack" role="status" aria-live="polite" aria-atomic="false"></div>
+
+<script src="assets/js/app.js"></script>
+</body>
+</html>

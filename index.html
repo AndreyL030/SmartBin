@@ -3,703 +3,213 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SmartBin — Умная мусорка с автоматической сортировкой</title>
-    <meta name="description" content="SmartBin автоматически определяет тип отходов и отправляет их в нужный контейнер. Умные урны для офиса, производства и дома. Сделано в России.">
+    <title>SmartBin — умная мусорка с автоматической сортировкой</title>
+    <meta name="description" content="SmartBin определяет тип отходов и отправляет их в нужный контейнер. Умные урны для офиса, производства и дома. Каталог моделей, запчасти, доставка по России.">
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='48' y2='48' gradientUnits='userSpaceOnUse'%3E%3Cstop offset='0' stop-color='%232563eb'/%3E%3Cstop offset='1' stop-color='%2310b981'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='48' height='48' rx='12' fill='url(%23g)'/%3E%3Crect x='13.5' y='15' width='21' height='3.4' rx='1.7' fill='%23fff'/%3E%3Cpath d='M16.2 19.6h15.6L30.2 35a4.2 4.2 0 0 1-4.17 3.8h-4.06A4.2 4.2 0 0 1 17.8 35l-1.6-15.4z' fill='%23fff'/%3E%3C/svg%3E">
-
-    <style>
-        :root {
-            --primary: #2563eb;
-            --primary-dark: #1d4ed8;
-            --sky: #06b6d4;
-            --accent: #10b981;
-            --accent-dark: #059669;
-            --grad-brand: linear-gradient(135deg, #2563eb 0%, #06b6d4 55%, #10b981 100%);
-            --bg: #f5f7fb;
-            --surface: #ffffff;
-            --text-dark: #0f172a;
-            --text-muted: #64748b;
-            --border: #e2e8f0;
-            --radius: 16px;
-            --radius-lg: 24px;
-            --danger: #ef4444;
-            --support-bg: #22c55e;
-            --shadow-sm: 0 1px 3px rgba(15,23,42,.06), 0 4px 14px rgba(15,23,42,.05);
-            --shadow-md: 0 10px 30px rgba(15,23,42,.10);
-            --shadow-lg: 0 24px 60px rgba(15,23,42,.16);
-        }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        html { scroll-behavior: smooth; }
-        body {
-            font-family: "Inter", "Manrope", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background: var(--bg);
-            color: var(--text-dark);
-            -webkit-font-smoothing: antialiased;
-        }
-        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
-
-        ::selection { background: rgba(37,99,235,.18); }
-        :focus-visible { outline: 3px solid rgba(37,99,235,.45); outline-offset: 2px; border-radius: 6px; }
-
-        /* --- ШАПКА --- */
-        header {
-            position: sticky; top: 0; z-index: 100;
-            background: rgba(255,255,255,.82);
-            backdrop-filter: blur(14px) saturate(1.5);
-            -webkit-backdrop-filter: blur(14px) saturate(1.5);
-            border-bottom: 1px solid var(--border);
-        }
-        header .header-inner { display: flex; justify-content: space-between; align-items: center; padding-top: 14px; padding-bottom: 14px; }
-
-        .logo-block { display: flex; align-items: center; gap: 12px; text-decoration: none; }
-        .logo-svg { display: block; filter: drop-shadow(0 4px 10px rgba(37,99,235,.25)); }
-        .logo-word { font-size: 1.45rem; font-weight: 800; letter-spacing: -.02em; color: var(--text-dark); }
-        .logo-word b {
-            background: var(--grad-brand);
-            -webkit-background-clip: text; background-clip: text;
-            -webkit-text-fill-color: transparent; color: transparent;
-        }
-
-        .nav-links { display: flex; align-items: center; gap: 26px; }
-        .nav-links a {
-            position: relative;
-            color: var(--text-muted); text-decoration: none;
-            font-weight: 600; font-size: .95rem;
-            transition: color .25s;
-        }
-        .nav-links a::after {
-            content: ''; position: absolute; left: 0; bottom: -6px;
-            width: 0; height: 2.5px; border-radius: 2px;
-            background: var(--grad-brand);
-            transition: width .25s;
-        }
-        .nav-links a:hover { color: var(--text-dark); }
-        .nav-links a:hover::after { width: 100%; }
-
-        .btn-cart {
-            display: inline-flex; align-items: center; gap: 9px;
-            background: var(--grad-brand); color: #fff;
-            border: none; padding: 10px 18px; border-radius: 999px;
-            cursor: pointer; font-weight: 700; font-size: .95rem;
-            box-shadow: 0 6px 18px rgba(37,99,235,.35);
-            transition: transform .2s, box-shadow .2s;
-        }
-        .btn-cart:hover { transform: translateY(-1px); box-shadow: 0 10px 24px rgba(37,99,235,.45); }
-        .cart-badge {
-            background: #fff; color: var(--primary);
-            border-radius: 999px; min-width: 22px; height: 22px;
-            display: inline-flex; align-items: center; justify-content: center;
-            font-size: .8rem; font-weight: 800; padding: 0 6px;
-        }
-
-        /* --- ГЛАВНЫЙ ЭКРАН --- */
-        .hero {
-            position: relative; overflow: hidden;
-            border-radius: var(--radius-lg);
-            background: linear-gradient(135deg, #eef4ff 0%, #f0fdfa 55%, #ecfdf5 100%);
-            border: 1px solid rgba(226,232,240,.9);
-            padding: 72px 30px 60px;
-            text-align: center;
-            margin: 30px 0 10px;
-            box-shadow: var(--shadow-sm);
-        }
-        .hero::before, .hero::after {
-            content: ''; position: absolute; border-radius: 50%;
-            filter: blur(70px); opacity: .45; pointer-events: none;
-            animation: float 9s ease-in-out infinite;
-        }
-        .hero::before { width: 420px; height: 420px; background: #93c5fd; top: -160px; left: -120px; }
-        .hero::after { width: 380px; height: 380px; background: #6ee7b7; bottom: -160px; right: -100px; animation-delay: -4.5s; }
-
-        .hero-badge {
-            display: inline-flex; align-items: center; gap: 8px;
-            background: rgba(255,255,255,.75); border: 1px solid var(--border);
-            border-radius: 999px; padding: 7px 16px;
-            font-size: .85rem; font-weight: 600; color: var(--text-muted);
-            box-shadow: var(--shadow-sm);
-            margin-bottom: 22px;
-        }
-        .hero-badge .dot {
-            width: 8px; height: 8px; border-radius: 50%;
-            background: var(--accent);
-            box-shadow: 0 0 0 4px rgba(16,185,129,.18);
-        }
-
-        .hero h2 {
-            font-size: clamp(2rem, 4.5vw, 3.1rem);
-            font-weight: 800; letter-spacing: -.03em; line-height: 1.15;
-            margin-bottom: 18px;
-        }
-        .accent-word {
-            background: var(--grad-brand);
-            -webkit-background-clip: text; background-clip: text;
-            -webkit-text-fill-color: transparent; color: transparent;
-        }
-        .hero p { font-size: 1.15rem; color: var(--text-muted); max-width: 720px; margin: 0 auto 34px; line-height: 1.65; }
-
-        .hero-cta { display: flex; justify-content: center; gap: 14px; flex-wrap: wrap; position: relative; z-index: 1; }
-
-        .hero-stats {
-            display: flex; justify-content: center; gap: clamp(24px, 6vw, 64px);
-            flex-wrap: wrap; margin-top: 46px;
-            position: relative; z-index: 1;
-        }
-        .hero-stats b {
-            display: block; font-size: 2rem; font-weight: 800; letter-spacing: -.02em;
-            background: var(--grad-brand);
-            -webkit-background-clip: text; background-clip: text;
-            -webkit-text-fill-color: transparent; color: transparent;
-        }
-        .hero-stats span { font-size: .85rem; color: var(--text-muted); font-weight: 500; }
-
-        /* --- КНОПКИ --- */
-        .btn {
-            display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-            padding: 14px 30px;
-            background: var(--grad-brand); color: white;
-            text-decoration: none; border-radius: 999px;
-            font-weight: 700; font-size: 1rem; border: none; cursor: pointer;
-            box-shadow: 0 8px 22px rgba(37,99,235,.35);
-            transition: transform .2s, box-shadow .2s, background-color .3s;
-        }
-        .btn:hover { transform: translateY(-2px); box-shadow: 0 14px 30px rgba(37,99,235,.45); }
-        .btn-outline {
-            background: rgba(255,255,255,.7);
-            border: 2px solid var(--primary); color: var(--primary);
-            box-shadow: none;
-        }
-        .btn-outline:hover { background: var(--primary); color: #fff; }
-
-        /* --- СЕКЦИИ --- */
-        .section-title {
-            text-align: center;
-            font-size: clamp(1.6rem, 3vw, 2.2rem);
-            font-weight: 800; letter-spacing: -.02em;
-            margin: 70px 0 14px; position: relative;
-        }
-        .section-title::after {
-            content: ''; position: absolute; bottom: -12px; left: 50%;
-            transform: translateX(-50%);
-            width: 70px; height: 5px; border-radius: 3px;
-            background: var(--grad-brand);
-        }
-        .section-sub { text-align: center; color: var(--text-muted); margin: 26px auto 40px; max-width: 620px; line-height: 1.6; }
-
-        /* Отступ при прокрутке к якорям, чтобы заголовок не уходил под липкую шапку */
-        section[id] { scroll-margin-top: 96px; }
-
-        /* --- КАК ЭТО РАБОТАЕТ --- */
-        .steps-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px; }
-        .step-card {
-            background: var(--surface); border: 1px solid var(--border);
-            border-radius: var(--radius-lg); padding: 30px 28px;
-            box-shadow: var(--shadow-sm);
-            transition: transform .3s, box-shadow .3s;
-        }
-        .step-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-md); }
-        .step-num {
-            width: 48px; height: 48px; border-radius: 15px;
-            background: var(--grad-brand); color: #fff;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.2rem; font-weight: 800;
-            margin-bottom: 18px;
-            box-shadow: 0 6px 16px rgba(37,99,235,.35);
-        }
-        .step-card h3 { font-size: 1.15rem; font-weight: 700; margin-bottom: 10px; letter-spacing: -.01em; }
-        .step-card p { font-size: .93rem; color: var(--text-muted); line-height: 1.6; }
-
-        /* --- ТОВАРЫ --- */
-        .products-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; }
-        .product-card {
-            position: relative; overflow: hidden;
-            border: 1px solid var(--border); border-radius: var(--radius-lg);
-            padding: 34px 28px 28px; text-align: center;
-            background-color: var(--surface);
-            box-shadow: var(--shadow-sm);
-            transition: transform .3s, box-shadow .3s;
-        }
-        .product-card::before {
-            content: ''; position: absolute; inset: 0 0 auto 0; height: 6px;
-            background: var(--grad-brand);
-        }
-        .product-card:hover { transform: translateY(-8px); box-shadow: var(--shadow-lg); }
-
-        .card-badge {
-            position: absolute; top: 22px; right: 22px;
-            font-size: .72rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
-            padding: 6px 12px; border-radius: 999px;
-        }
-        .card-badge.hit { background: #fff7ed; color: #ea580c; border: 1px solid #fed7aa; }
-        .card-badge.starter { background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; }
-
-        .product-icon {
-            width: 72px; height: 72px; border-radius: 22px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 2rem; margin: 0 auto 18px;
-            background: linear-gradient(135deg, #eff6ff, #ecfdf5);
-            border: 1px solid var(--border);
-        }
-        .product-card h3 { font-size: 1.5rem; margin-bottom: 8px; font-weight: 800; letter-spacing: -.02em; }
-        .product-card > p { color: var(--text-muted); font-size: .95rem; }
-        .price {
-            font-size: 2rem; font-weight: 800; letter-spacing: -.02em; margin: 18px 0;
-            background: var(--grad-brand);
-            -webkit-background-clip: text; background-clip: text;
-            -webkit-text-fill-color: transparent; color: transparent;
-        }
-        .features { text-align: left; margin-bottom: 26px; color: var(--text-muted); list-style: none; }
-        .features li { padding: 8px 0; border-bottom: 1px dashed var(--border); font-size: .93rem; display: flex; gap: 10px; align-items: baseline; }
-        .features li:last-child { border-bottom: none; }
-        .features .check { color: var(--accent); font-weight: 800; flex-shrink: 0; }
-
-        /* --- ЗАПЧАСТИ --- */
-        .parts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 22px; margin-top: 20px; }
-        .part-item {
-            border: 1px solid var(--border); border-radius: var(--radius-lg);
-            padding: 26px 22px; text-align: center;
-            background-color: var(--surface);
-            box-shadow: var(--shadow-sm);
-            transition: transform .3s, box-shadow .3s, border-color .3s;
-        }
-        .part-item:hover { transform: translateY(-5px); box-shadow: var(--shadow-md); border-color: #bfdbfe; }
-        .part-icon {
-            width: 58px; height: 58px; border-radius: 18px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.6rem; margin: 0 auto 14px;
-            background: linear-gradient(135deg, #eff6ff, #ecfdf5);
-            border: 1px solid var(--border);
-        }
-        .part-item h4 { font-size: 1.05rem; margin-bottom: 8px; font-weight: 700; }
-        .part-item p { font-size: .85rem; color: var(--text-muted); min-height: 40px; line-height: 1.5; }
-        .part-item .price { font-size: 1.45rem; margin: 14px 0 18px; }
-
-        /* --- ФУТЕР --- */
-        footer {
-            margin-top: 90px;
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-            color: #94a3b8;
-            padding: 44px 0 36px;
-        }
-        .footer-inner { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 24px; }
-        .footer-brand { display: flex; align-items: center; gap: 12px; color: #e2e8f0; font-weight: 600; }
-        .footer-brand small { display: block; font-weight: 400; color: #94a3b8; font-size: .82rem; margin-top: 2px; }
-        .footer-nav { display: flex; gap: 24px; flex-wrap: wrap; }
-        .footer-nav a { color: #cbd5e1; text-decoration: none; font-size: .92rem; font-weight: 500; transition: color .2s; }
-        .footer-nav a:hover { color: #fff; }
-        .footer-copy { font-size: .85rem; }
-
-        /* --- КОРЗИНА --- */
-        .cart-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(15,23,42,.55); backdrop-filter: blur(6px);
-            display: none; align-items: center; justify-content: center;
-            z-index: 2000; padding: 20px;
-            animation: fadeIn .2s ease;
-        }
-        .cart-modal {
-            background: var(--surface); width: 100%; max-width: 900px;
-            border-radius: var(--radius-lg); max-height: 90vh; overflow-y: auto;
-            display: flex; flex-direction: column;
-            box-shadow: var(--shadow-lg);
-            animation: popIn .28s cubic-bezier(.2,.9,.3,1.2);
-        }
-        .cart-header {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 22px 30px; border-bottom: 1px solid var(--border);
-        }
-        .cart-header h2 { margin: 0; font-size: 1.35rem; font-weight: 800; letter-spacing: -.01em; }
-        .close-cart {
-            background: var(--bg); border: none; font-size: 1.6rem; cursor: pointer;
-            color: var(--text-muted); line-height: 1;
-            width: 38px; height: 38px; border-radius: 12px;
-            transition: background-color .2s, color .2s;
-        }
-        .close-cart:hover { background: #fee2e2; color: var(--danger); }
-
-        .cart-items { padding: 0 30px; }
-        .cart-item { display: flex; align-items: center; padding: 20px 0; border-bottom: 1px solid var(--border); gap: 20px; }
-        .item-image {
-            width: 64px; height: 64px;
-            background: linear-gradient(135deg, #eff6ff, #ecfdf5);
-            border: 1px solid var(--border);
-            border-radius: 18px; flex-shrink: 0;
-            display: flex; align-items: center; justify-content: center; font-size: 1.5rem;
-        }
-        .item-details { flex-grow: 1; min-width: 0; }
-        .item-title { font-size: 1.05rem; font-weight: 700; margin-bottom: 6px; }
-        .item-controls { display: flex; align-items: center; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
-        .qty-btn {
-            width: 32px; height: 32px; border: 1px solid var(--border);
-            background: var(--surface); border-radius: 50%;
-            cursor: pointer; font-size: 1.1rem; color: var(--text-dark);
-            transition: border-color .2s, color .2s, background-color .2s;
-        }
-        .qty-btn:hover { border-color: var(--primary); color: var(--primary); background: #eff6ff; }
-        .qty-input {
-            width: 54px; text-align: center; border: 1px solid var(--border);
-            border-radius: 10px; padding: 6px; font-weight: 600;
-            background: var(--bg);
-        }
-        .qty-input:focus { outline: none; border-color: var(--primary); background: #fff; }
-        .item-price { font-weight: 800; font-size: 1.05rem; min-width: 100px; text-align: right; flex-shrink: 0; }
-        .remove-btn { background: none; border: none; color: var(--danger); cursor: pointer; font-size: .88rem; margin-left: auto; padding: 0; font-weight: 600; }
-        .remove-btn:hover { text-decoration: underline; }
-
-        .cart-footer { padding: 25px 30px; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 15px; background: var(--bg); }
-        .summary-row { display: flex; justify-content: space-between; font-size: 1.05rem; color: var(--text-muted); }
-        .summary-row.total { font-size: 1.45rem; font-weight: 800; color: var(--text-dark); border-top: 2px solid var(--border); padding-top: 15px; margin-top: 8px; }
-        .summary-row.total span:last-child {
-            background: var(--grad-brand);
-            -webkit-background-clip: text; background-clip: text;
-            -webkit-text-fill-color: transparent; color: transparent;
-        }
-        .btn-checkout {
-            width: 100%; padding: 16px;
-            background: var(--grad-brand); color: white; border: none;
-            border-radius: var(--radius); font-size: 1.05rem; font-weight: 700;
-            cursor: pointer; box-shadow: 0 8px 20px rgba(37,99,235,.35);
-            transition: transform .2s, box-shadow .2s, background-color .2s;
-        }
-        .btn-checkout:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 12px 26px rgba(37,99,235,.45); }
-        .btn-checkout:disabled { background: #cbd5e1; cursor: not-allowed; box-shadow: none; }
-
-        .empty-cart { text-align: center; padding: 48px 20px; color: var(--text-muted); }
-        .empty-cart svg { width: 60px; height: 60px; margin-bottom: 15px; opacity: .45; }
-
-        /* --- ОПРОСНИК --- */
-        .survey-option {
-            display: flex; align-items: center; padding: 13px 14px;
-            cursor: pointer; border-radius: 14px;
-            border: 1px solid transparent;
-            transition: background-color .2s, border-color .2s;
-        }
-        .survey-option:hover { background-color: var(--bg); }
-        .survey-option:has(input:checked) { background-color: #eff6ff; border-color: #bfdbfe; }
-        .survey-option input[type="radio"] {
-            margin-right: 12px; width: 18px; height: 18px;
-            accent-color: var(--primary);
-        }
-        .survey-option span { font-size: .98rem; color: var(--text-dark); }
-
-        /* --- ПОДДЕРЖКА --- */
-        .support-btn {
-            position: fixed; bottom: 30px; right: 30px;
-            background: linear-gradient(135deg, #22c55e, #10b981); color: white;
-            border: none; width: 62px; height: 62px; border-radius: 50%;
-            box-shadow: 0 10px 26px rgba(16,185,129,.45);
-            cursor: pointer; font-size: 1.9rem; font-weight: 700;
-            display: flex; align-items: center; justify-content: center;
-            z-index: 3000;
-            transition: transform .3s, box-shadow .3s;
-        }
-        .support-btn:hover { transform: scale(1.1); box-shadow: 0 14px 32px rgba(16,185,129,.55); }
-
-        .support-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(15,23,42,.55); backdrop-filter: blur(6px);
-            display: none; align-items: center; justify-content: center;
-            z-index: 4000; padding: 20px;
-            animation: fadeIn .2s ease;
-        }
-        .support-modal {
-            background: var(--surface); width: 100%; max-width: 400px;
-            height: 600px; max-height: 90vh; border-radius: var(--radius-lg);
-            display: flex; flex-direction: column;
-            box-shadow: var(--shadow-lg); overflow: hidden;
-            animation: popIn .28s cubic-bezier(.2,.9,.3,1.2);
-        }
-        .support-header {
-            background: linear-gradient(135deg, #22c55e, #059669); color: white;
-            padding: 16px 20px; display: flex; justify-content: space-between; align-items: center;
-        }
-        .support-header h2 { margin: 0; font-size: 1.15rem; font-weight: 700; }
-        .close-support {
-            background: rgba(255,255,255,.2); border: none; color: white;
-            font-size: 1.3rem; cursor: pointer;
-            width: 34px; height: 34px; border-radius: 10px; line-height: 1;
-            transition: background-color .2s;
-        }
-        .close-support:hover { background: rgba(255,255,255,.35); }
-        .support-body {
-            flex-grow: 1; padding: 20px; background-color: #eef2f7;
-            overflow-y: auto; display: flex; flex-direction: column; gap: 12px;
-        }
-        .message {
-            max-width: 80%; padding: 12px 16px; border-radius: 18px;
-            font-size: .93rem; line-height: 1.45;
-            animation: msgIn .25s ease;
-        }
-        .message.bot { align-self: flex-start; background-color: #fff; color: var(--text-dark); border-bottom-left-radius: 5px; box-shadow: var(--shadow-sm); }
-        .message.user { align-self: flex-end; background: var(--grad-brand); color: white; border-bottom-right-radius: 5px; }
-        .support-footer { padding: 14px 18px; border-top: 1px solid var(--border); display: flex; gap: 10px; background: #fff; }
-        .support-input {
-            flex-grow: 1; border: 1px solid var(--border); border-radius: 999px;
-            padding: 11px 16px; font-size: .95rem; background: var(--bg);
-        }
-        .support-input:focus { outline: none; border-color: var(--primary); background: #fff; }
-        .support-send {
-            width: 42px; height: 42px; border: none; border-radius: 50%;
-            background: var(--grad-brand); color: white; cursor: pointer; font-size: 1.1rem;
-            display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 6px 16px rgba(37,99,235,.35);
-            transition: transform .2s;
-        }
-        .support-send:hover { transform: scale(1.08); }
-
-        /* --- АНИМАЦИИ --- */
-        @keyframes float {
-            0%, 100% { transform: translateY(0) translateX(0); }
-            50% { transform: translateY(-24px) translateX(14px); }
-        }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes popIn {
-            from { opacity: 0; transform: translateY(22px) scale(.96); }
-            to { opacity: 1; transform: none; }
-        }
-        @keyframes msgIn {
-            from { opacity: 0; transform: translateY(8px); }
-            to { opacity: 1; transform: none; }
-        }
-
-        /* Плавное появление блоков при прокрутке (активируется из JS) */
-        .js .reveal { opacity: 0; transform: translateY(26px); transition: opacity .6s ease, transform .6s ease; }
-        .js .reveal.visible { opacity: 1; transform: none; }
-
-        @media (prefers-reduced-motion: reduce) {
-            *, *::before, *::after { animation: none !important; transition: none !important; }
-            .js .reveal { opacity: 1; transform: none; }
-        }
-
-        @media (max-width: 768px) {
-            .header-inner { flex-wrap: wrap; gap: 14px; justify-content: center; }
-            .nav-links { gap: 16px; }
-            .hero { padding: 46px 20px 40px; }
-            .hero-stats { gap: 22px; }
-            .products-grid, .parts-grid, .steps-grid { grid-template-columns: 1fr; }
-            .cart-item { flex-wrap: wrap; gap: 14px; }
-            .item-image { width: 56px; height: 56px; }
-            .cart-modal { max-height: 95vh; }
-            .support-btn { bottom: 18px; right: 18px; width: 56px; height: 56px; font-size: 1.7rem; }
-            .support-modal { height: 85vh; }
-            .footer-inner { flex-direction: column; text-align: center; }
-        }
-    </style>
+    <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
 
-<header>
+<header class="site-header">
     <div class="container header-inner">
-        <!-- Логотип: смарт-урна с листом, встроен в страницу (SVG), внешних зависимостей нет -->
-        <a class="logo-block" href="#" aria-label="SmartBin — на главную">
-            <svg class="logo-svg" width="44" height="44" viewBox="0 0 48 48" role="img" aria-label="Логотип SmartBin">
+        <a class="logo-block" href="index.html" aria-label="SmartBin — на главную">
+            <svg class="logo-svg" width="40" height="40" viewBox="0 0 48 48" role="img" aria-label="Логотип SmartBin">
                 <defs>
-                    <linearGradient id="logoGrad" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
+                    <linearGradient id="logoGradH" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
                         <stop offset="0" stop-color="#2563eb"/>
                         <stop offset=".55" stop-color="#06b6d4"/>
                         <stop offset="1" stop-color="#10b981"/>
                     </linearGradient>
                 </defs>
-                <rect width="48" height="48" rx="13" fill="url(#logoGrad)"/>
+                <rect width="48" height="48" rx="13" fill="url(#logoGradH)"/>
                 <rect x="13.5" y="15" width="21" height="3.4" rx="1.7" fill="#fff"/>
                 <path d="M19.5 15v-2.4a4.5 4.5 0 0 1 9 0V15" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/>
                 <path d="M16.2 19.6h15.6L30.2 35a4.2 4.2 0 0 1-4.17 3.8h-4.06A4.2 4.2 0 0 1 17.8 35l-1.6-15.4z" fill="#fff"/>
-                <path d="M24 22.4c2.9.6 4.4 2.6 4.4 4.8 0 2.3-1.7 4.3-4.4 4.8-2.7-.5-4.4-2.5-4.4-4.8 0-2.2 1.5-4.2 4.4-4.8z" fill="url(#logoGrad)"/>
+                <path d="M24 22.4c2.9.6 4.4 2.6 4.4 4.8 0 2.3-1.7 4.3-4.4 4.8-2.7-.5-4.4-2.5-4.4-4.8 0-2.2 1.5-4.2 4.4-4.8z" fill="url(#logoGradH)"/>
                 <path d="M24 23.4v7.6" stroke="#fff" stroke-width="1.4" stroke-linecap="round"/>
             </svg>
             <span class="logo-word">Smart<b>Bin</b></span>
         </a>
 
-        <nav class="nav-links">
-            <a href="#how">Как это работает</a>
-            <a href="#products">Товары</a>
-            <a href="#parts">Запчасти</a>
+        <button class="nav-toggle" type="button" aria-label="Открыть меню" aria-expanded="false" aria-controls="mainNav">
+            <span></span>
+        </button>
+
+        <nav class="nav-links" id="mainNav" aria-label="Основная навигация">
+            <a href="index.html" aria-current="page">Главная</a>
+            <a href="catalog.html">Каталог</a>
+            <a href="support.html">Поддержка</a>
         </nav>
-        <button class="btn-cart" id="openCartBtn">Корзина <span id="cartCounter" class="cart-badge">0</span></button>
-    </div>
-</header>
 
-<main class="container">
-    <section class="hero">
-        <span class="hero-badge"><span class="dot"></span> Новое поколение сортировки отходов</span>
-        <h2>Забудьте о <span class="accent-word">ручном разделении</span> мусора</h2>
-        <p>SmartBin автоматически определяет тип отходов и отправляет их в нужный контейнер. Сделайте свой вклад в развитие экологии.</p>
-        <div class="hero-cta">
-            <a href="#products" class="btn">Выбрать комплектацию</a>
-            <a href="#how" class="btn btn-outline">Как это работает</a>
-        </div>
-        <div class="hero-stats">
-            <div><b>98%</b><span>точность распознавания</span></div>
-            <div><b>4</b><span>секции сортировки</span></div>
-            <div><b>×2</b><span>быстрее ручной сортировки</span></div>
-        </div>
-    </section>
-
-    <section id="how">
-        <h2 class="section-title reveal">Как это работает</h2>
-        <p class="section-sub reveal">Три шага — и мусор оказывается в нужном отсеке без вашего участия.</p>
-        <div class="steps-grid">
-            <div class="step-card reveal">
-                <div class="step-num">1</div>
-                <h3>Бросайте всё в одно окно</h3>
-                <p>Сенсор сканирует предмет и определяет материал: пластик, стекло, бумага или органика.</p>
-            </div>
-            <div class="step-card reveal">
-                <div class="step-num">2</div>
-                <h3>Урна сортирует сама</h3>
-                <p>Сервопривод поворачивает лоток, и отходы попадают в свой отсек — бесшумно и за секунду.</p>
-            </div>
-            <div class="step-card reveal">
-                <div class="step-num">3</div>
-                <h3>Следите в приложении</h3>
-                <p>Статистика, заполненность контейнеров и напоминания о вывозе — всегда под рукой.</p>
-            </div>
-        </div>
-    </section>
-
-    <section id="products">
-        <h2 class="section-title reveal">Выберите вашу SmartBin</h2>
-        <p class="section-sub reveal">Две модели под любую задачу — от компактного офиса до целого этажа.</p>
-        <div class="products-grid">
-            <div class="product-card reveal">
-                <span class="card-badge starter">Для старта</span>
-                <div class="product-icon">🌱</div>
-                <h3>SmartBin Eco</h3>
-                <p>Идеально для небольшого офиса.</p>
-                <div class="price">24 990 ₽</div>
-                <ul class="features">
-                    <li><span class="check">✓</span> Объем: 40 литров</li>
-                    <li><span class="check">✓</span> Автоматическое определение типа отходов</li>
-                    <li><span class="check">✓</span> Мобильное приложение</li>
-                </ul>
-                <button class="btn" onclick="addToCart('SmartBin Eco')">Купить SmartBin Eco</button>
-            </div>
-
-            <div class="product-card reveal">
-                <span class="card-badge hit">Хит продаж</span>
-                <div class="product-icon">⚡</div>
-                <h3>SmartBin Pro</h3>
-                <p>Для корпоративных пространств.</p>
-                <div class="price">49 990 ₽</div>
-                <ul class="features">
-                    <li><span class="check">✓</span> Объем: 80 литров</li>
-                    <li><span class="check">✓</span> Расширенная база распознавания</li>
-                    <li><span class="check">✓</span> Встроенный пресс для пластика</li>
-                </ul>
-                <button class="btn" onclick="addToCart('SmartBin Pro')">Купить SmartBin Pro</button>
-            </div>
-        </div>
-    </section>
-
-    <section id="parts">
-        <h2 class="section-title reveal">Магазин запчастей и модулей</h2>
-        <p class="section-sub reveal">Оригинальные комплектующие с доставкой по России.</p>
-        <div class="parts-grid">
-            <div class="part-item reveal">
-                <div class="part-icon">⚙️</div>
-                <h4>Сервопривод лотка</h4>
-                <p>Бесшумный мотор для распределения отсеков.</p>
-                <div class="price">2 490 ₽</div>
-                <button class="btn btn-outline" onclick="addToCart('Сервопривод лотка')">В корзину</button>
-            </div>
-
-            <div class="part-item reveal">
-                <div class="part-icon">🛍️</div>
-                <h4>Комплект мешков (50 шт)</h4>
-                <p>Биоразлагаемые мешки для отсека органики.</p>
-                <div class="price">890 ₽</div>
-                <button class="btn btn-outline" onclick="addToCart('Комплект мешков (50 шт)')">В корзину</button>
-            </div>
-
-            <div class="part-item reveal">
-                <div class="part-icon">📡</div>
-                <h4>Wi-Fi / Bluetooth модуль</h4>
-                <p>Для обновления прошивки и связи с умным домом.</p>
-                <div class="price">1 990 ₽</div>
-                <button class="btn btn-outline" onclick="addToCart('Wi-Fi / Bluetooth модуль')">В корзину</button>
-            </div>
-        </div>
-    </section>
-</main>
-
-<footer>
-    <div class="container footer-inner">
-        <div class="footer-brand">
-            <svg width="34" height="34" viewBox="0 0 48 48" role="img" aria-label="Логотип SmartBin" aria-hidden="true">
-                <defs>
-                    <linearGradient id="logoGradF" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
-                        <stop offset="0" stop-color="#2563eb"/>
-                        <stop offset=".55" stop-color="#06b6d4"/>
-                        <stop offset="1" stop-color="#10b981"/>
-                    </linearGradient>
-                </defs>
-                <rect width="48" height="48" rx="13" fill="url(#logoGradF)"/>
-                <rect x="13.5" y="15" width="21" height="3.4" rx="1.7" fill="#fff"/>
-                <path d="M19.5 15v-2.4a4.5 4.5 0 0 1 9 0V15" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/>
-                <path d="M16.2 19.6h15.6L30.2 35a4.2 4.2 0 0 1-4.17 3.8h-4.06A4.2 4.2 0 0 1 17.8 35l-1.6-15.4z" fill="#fff"/>
-                <path d="M24 22.4c2.9.6 4.4 2.6 4.4 4.8 0 2.3-1.7 4.3-4.4 4.8-2.7-.5-4.4-2.5-4.4-4.8 0-2.2 1.5-4.2 4.4-4.8z" fill="url(#logoGradF)"/>
-            </svg>
-            <div>
-                SmartBin
-                <small>Умная сортировка отходов</small>
-            </div>
-        </div>
-        <nav class="footer-nav">
-            <a href="#products">Товары</a>
-            <a href="#parts">Запчасти</a>
-            <a href="#" id="footerSupportLink">Поддержка</a>
-        </nav>
-        <div class="footer-copy">© 2026 SmartBin. Сделано в России 🇷🇺</div>
-    </div>
-</footer>
-
-<!-- Модальное окно корзины -->
-<div class="cart-overlay" id="cartOverlay" role="dialog" aria-modal="true" aria-label="Корзина">
-    <div class="cart-modal">
-        <div class="cart-header">
-            <h2>🛒 Ваша корзина</h2>
-            <button class="close-cart" id="closeCartBtn" aria-label="Закрыть корзину">&times;</button>
-        </div>
-
-        <div id="cartBody">
-            <div id="emptyState" class="empty-cart" style="display: none;">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <div class="header-actions">
+            <a class="cart-link" href="cart.html">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                     <circle cx="9" cy="21" r="1"></circle>
                     <circle cx="20" cy="21" r="1"></circle>
                     <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
                 </svg>
-                <p>Ваша корзина пуста</p>
-            </div>
-            <div id="cartItemsContainer"></div>
-        </div>
-
-        <div class="cart-footer">
-            <div class="summary-row">
-                <span>Итого:</span>
-                <span id="summaryTotal">0 ₽</span>
-            </div>
-            <div class="summary-row total">
-                <span>К оплате:</span>
-                <span id="summaryTotal2">0 ₽</span>
-            </div>
-            <button id="checkoutBtn" class="btn-checkout" disabled onclick="goToCheckout()">Перейти к оплате</button>
+                Корзина
+                <span class="cart-badge" data-cart-count hidden>0</span>
+            </a>
         </div>
     </div>
-</div>
+</header>
 
-<!-- Модальное окно опросника -->
-<div class="cart-overlay" id="surveyOverlay" role="dialog" aria-modal="true" aria-label="Опрос">
-    <div class="cart-modal" style="max-width: 500px;">
-        <div class="cart-header">
-            <h2>📝 Помогите нам стать лучше</h2>
-            <button class="close-cart" id="closeSurveyBtn" aria-label="Закрыть опрос">&times;</button>
+<main>
+    <div class="container">
+        <section class="hero">
+            <div class="hero-copy">
+                <span class="hero-badge"><span class="dot" aria-hidden="true"></span> Новое поколение сортировки отходов</span>
+                <h1>Забудьте о <span class="accent-word">ручном разделении</span> мусора</h1>
+                <p class="lead">SmartBin сам определяет материал предмета и отправляет его в нужный отсек. Одно окно для всех отходов — и ни одной ошибки сортировки.</p>
+                <div class="hero-cta">
+                    <a class="btn btn--grad" href="catalog.html">Выбрать комплектацию</a>
+                    <a class="btn btn--outline" href="#how">Как это работает</a>
+                </div>
+                <div class="hero-stats">
+                    <div><b>98%</b><span>точность распознавания</span></div>
+                    <div><b>4</b><span>секции сортировки</span></div>
+                    <div><b>×2</b><span>быстрее ручной сортировки</span></div>
+                </div>
+            </div>
+
+            <div class="hero-visual" aria-hidden="true">
+                <div class="bin-illustration">
+                    <div class="bin-lid"></div>
+                    <div class="bin-slot"></div>
+                    <div class="bin-sections">
+                        <span data-label="Пластик"></span>
+                        <span data-label="Стекло"></span>
+                        <span data-label="Бумага"></span>
+                        <span data-label="Органика"></span>
+                    </div>
+                </div>
+                <div class="hero-float hero-float--top">🎯 Точность <em>98%</em></div>
+                <div class="hero-float hero-float--bottom">🔇 Тише <em>35 дБ</em></div>
+            </div>
+        </section>
+
+        <section class="section" id="how">
+            <div class="section-head">
+                <h2 class="section-title reveal">Как это работает</h2>
+                <p class="section-sub reveal">Три шага — и мусор оказывается в нужном отсеке без вашего участия.</p>
+            </div>
+            <div class="steps-grid">
+                <article class="step-card reveal">
+                    <div class="step-num" aria-hidden="true">1</div>
+                    <h3>Бросайте всё в одно окно</h3>
+                    <p>Сенсор сканирует предмет и определяет материал: пластик, стекло, бумага или органика.</p>
+                </article>
+                <article class="step-card reveal">
+                    <div class="step-num" aria-hidden="true">2</div>
+                    <h3>Урна сортирует сама</h3>
+                    <p>Сервопривод поворачивает лоток, и отходы попадают в свой отсек — бесшумно и за секунду.</p>
+                </article>
+                <article class="step-card reveal">
+                    <div class="step-num" aria-hidden="true">3</div>
+                    <h3>Следите в приложении</h3>
+                    <p>Статистика, заполненность контейнеров и напоминания о вывозе — всегда под рукой.</p>
+                </article>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="section-head">
+                <h2 class="section-title reveal">Выберите вашу SmartBin</h2>
+                <p class="section-sub reveal">Две модели под любую задачу — от компактного офиса до целого этажа.</p>
+            </div>
+            <div class="cards-grid" data-featured></div>
+            <div style="text-align:center;margin-top:28px">
+                <a class="btn btn--outline" href="catalog.html">Смотреть весь каталог и запчасти</a>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="benefits">
+                <div class="benefit reveal">
+                    <div class="benefit__ico" aria-hidden="true">🚚</div>
+                    <div><b>Доставка по России</b><span>Бесплатно от 50 000 ₽, 1–5 дней</span></div>
+                </div>
+                <div class="benefit reveal">
+                    <div class="benefit__ico" aria-hidden="true">🛠️</div>
+                    <div><b>Гарантия до 3 лет</b><span>Сервис и запчасти со склада</span></div>
+                </div>
+                <div class="benefit reveal">
+                    <div class="benefit__ico" aria-hidden="true">↩️</div>
+                    <div><b>Возврат 14 дней</b><span>Без объяснения причин</span></div>
+                </div>
+                <div class="benefit reveal">
+                    <div class="benefit__ico" aria-hidden="true">💬</div>
+                    <div><b>Живая поддержка</b><span>Ответим в чате за 5 минут</span></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="cta-banner reveal">
+            <div>
+                <h2>Не уверены, какая модель подойдёт?</h2>
+                <p>Расскажите про помещение — подберём конфигурацию и посчитаем стоимость.</p>
+            </div>
+            <a class="btn" href="support.html">Написать в поддержку</a>
+        </section>
+    </div>
+</main>
+
+<footer class="site-footer">
+    <div class="container">
+        <div class="footer-grid">
+            <div class="footer-brand">
+                <svg width="38" height="38" viewBox="0 0 48 48" role="img" aria-label="Логотип SmartBin">
+                    <defs>
+                        <linearGradient id="logoGradF" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
+                            <stop offset="0" stop-color="#2563eb"/>
+                            <stop offset=".55" stop-color="#06b6d4"/>
+                            <stop offset="1" stop-color="#10b981"/>
+                        </linearGradient>
+                    </defs>
+                    <rect width="48" height="48" rx="13" fill="url(#logoGradF)"/>
+                    <rect x="13.5" y="15" width="21" height="3.4" rx="1.7" fill="#fff"/>
+                    <path d="M19.5 15v-2.4a4.5 4.5 0 0 1 9 0V15" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/>
+                    <path d="M16.2 19.6h15.6L30.2 35a4.2 4.2 0 0 1-4.17 3.8h-4.06A4.2 4.2 0 0 1 17.8 35l-1.6-15.4z" fill="#fff"/>
+                </svg>
+                <div>SmartBin<small>Умная сортировка отходов</small></div>
+            </div>
+            <div class="footer-col">
+                <h3>Каталог</h3>
+                <ul>
+                    <li><a href="catalog.html">Все товары</a></li>
+                    <li><a href="catalog.html?filter=bin">Умные урны</a></li>
+                    <li><a href="catalog.html?filter=part">Запчасти и модули</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h3>Компания</h3>
+                <ul>
+                    <li><a href="index.html#how">Как это работает</a></li>
+                    <li><a href="support.html">Поддержка</a></li>
+                    <li><a href="cart.html">Корзина</a></li>
+                    <li><a href="mailto:hello@smartbin.ru">hello@smartbin.ru</a></li>
+                </ul>
+            </div>
         </div>
+        <div class="footer-bottom">
+            <span>© <span data-year>2026</span> SmartBin. Сделано в России.</span>
+            <span>Демо-проект: товары, цены и контакты вымышлены</span>
+        </div>
+    </div>
+</footer>
 
-        <div class="cart-body" style="padding: 20px 30px;">
-            <p style="font-size: 1rem; color: var(--text-dark); margin-bottom: 20px;">
-                Для какой среды вы подбираете SmartBin?
-            </p>
-            <form id="surveyForm">
+<div class="overlay" id="surveyOverlay" role="dialog" aria-modal="true" aria-labelledby="surveyTitle">
+    <div class="modal">
+        <div class="modal__head">
+            <div>
+                <h2 id="surveyTitle">📝 Помогите нам стать лучше</h2>
+                <p>Для какой среды вы подбираете SmartBin?</p>
+            </div>
+            <button class="modal__close" type="button" data-close-survey aria-label="Закрыть опрос">&times;</button>
+        </div>
+        <div class="modal__body">
+            <form>
                 <label class="survey-option">
                     <input type="radio" name="surveyTarget" value="office" checked>
                     <span>Офис или коворкинг</span>
@@ -716,294 +226,14 @@
                     <input type="radio" name="surveyTarget" value="home">
                     <span>Частный дом или квартира</span>
                 </label>
+                <button class="btn btn--grad btn--block" type="submit" style="margin-top:8px">Отправить</button>
             </form>
         </div>
-
-        <div class="cart-footer">
-            <button id="submitSurveyBtn" class="btn-checkout">Отправить</button>
-        </div>
     </div>
 </div>
 
-<!-- Модальное окно поддержки -->
-<div class="support-overlay" id="supportOverlay" role="dialog" aria-modal="true" aria-label="Чат поддержки">
-    <div class="support-modal">
-        <div class="support-header">
-            <h2>💬 Поддержка SmartBin</h2>
-            <button class="close-support" id="closeSupportBtn" aria-label="Закрыть чат">&times;</button>
-        </div>
+<div class="toast-stack" role="status" aria-live="polite" aria-atomic="false"></div>
 
-        <div class="support-body" id="supportChat">
-            <!-- Сообщения будут добавляться сюда через JS -->
-            <div class="message bot">Здравствуйте! Задайте ваш вопрос, и мы поможем подобрать оборудование.</div>
-        </div>
-
-        <div class="support-footer">
-            <input type="text" id="supportInput" class="support-input" placeholder="Введите сообщение...">
-            <button id="supportSendBtn" class="support-send" aria-label="Отправить сообщение">→</button>
-        </div>
-    </div>
-</div>
-
-<!-- Кнопка поддержки -->
-<button class="support-btn" id="supportBtn" aria-label="Открыть чат поддержки">?</button>
-
-<script>
-// Скрипт расположен в конце body, поэтому DOM уже готов и функции доступны
-// для inline-обработчиков onclick (раньше они были спрятаны внутри
-// замыкания DOMContentLoaded и кнопки корзины не работали).
-
-// --- БАЗА ДАННЫХ ТОВАРОВ ---
-const productsDB = {
-    "SmartBin Eco": { price: 24990 },
-    "SmartBin Pro": { price: 49990 },
-    "Сервопривод лотка": { price: 2490 },
-    "Комплект мешков (50 шт)": { price: 890 },
-    "Wi-Fi / Bluetooth модуль": { price: 1990 }
-};
-
-// --- ОБЩАЯ ЛОГИКА МОДАЛЬНЫХ ОКОН ---
-const cartOverlay = document.getElementById('cartOverlay');
-const surveyOverlay = document.getElementById('surveyOverlay');
-const supportOverlay = document.getElementById('supportOverlay');
-
-function openOverlay(el) {
-    el.style.display = 'flex';
-    updateScrollLock();
-}
-function closeOverlay(el) {
-    el.style.display = 'none';
-    updateScrollLock();
-}
-function anyOverlayOpen() {
-    return [cartOverlay, surveyOverlay, supportOverlay].some(o => o.style.display === 'flex');
-}
-// Блокируем прокрутку страницы, пока открыто любое модальное окно
-function updateScrollLock() {
-    document.body.style.overflow = anyOverlayOpen() ? 'hidden' : '';
-}
-
-// Esc закрывает верхнее открытое окно (приоритет: чат -> опрос -> корзина)
-document.addEventListener('keydown', (e) => {
-    if (e.key !== 'Escape') return;
-    if (supportOverlay.style.display === 'flex') closeOverlay(supportOverlay);
-    else if (surveyOverlay.style.display === 'flex') closeOverlay(surveyOverlay);
-    else if (cartOverlay.style.display === 'flex') closeOverlay(cartOverlay);
-});
-
-// --- ЛОГИКА КОРЗИНЫ ---
-let cart = [];
-const cartCounter = document.getElementById('cartCounter');
-const closeCartBtn = document.getElementById('closeCartBtn');
-const openCartBtn = document.getElementById('openCartBtn');
-const cartItemsContainer = document.getElementById('cartItemsContainer');
-const summaryTotal = document.getElementById('summaryTotal');
-const summaryTotal2 = document.getElementById('summaryTotal2');
-const checkoutBtn = document.getElementById('checkoutBtn');
-const emptyState = document.getElementById('emptyState');
-
-function renderCart() {
-    let totalPrice = 0;
-    cartItemsContainer.innerHTML = '';
-
-    if (cart.length === 0) {
-        emptyState.style.display = 'block';
-        checkoutBtn.disabled = true;
-    } else {
-        emptyState.style.display = 'none';
-        checkoutBtn.disabled = false;
-
-        cart.forEach(item => {
-            const productInfo = productsDB[item.name];
-            if (!productInfo) return; // неизвестный товар пропускаем
-            const lineTotal = item.qty * productInfo.price;
-            totalPrice += lineTotal;
-
-            cartItemsContainer.innerHTML += `
-                <div class="cart-item">
-                    <div class="item-image">📦</div>
-                    <div class="item-details">
-                        <div class="item-title">${item.name}</div>
-                        <div class="item-controls">
-                            <button class="qty-btn" onclick="changeQty('${item.name}', -1)">−</button>
-                            <input type="number" class="qty-input" value="${item.qty}" min="1" onchange="changeQty('${item.name}', 0, this.value)">
-                            <button class="qty-btn" onclick="changeQty('${item.name}', 1)">+</button>
-                            <button class="remove-btn" onclick="removeFromCart('${item.name}')">Удалить</button>
-                        </div>
-                    </div>
-                    <div class="item-price">${lineTotal.toLocaleString('ru-RU')} ₽</div>
-                </div>
-            `;
-        });
-    }
-
-    const totalText = totalPrice.toLocaleString('ru-RU') + ' ₽';
-    summaryTotal.textContent = totalText;
-    summaryTotal2.textContent = totalText;
-    cartCounter.textContent = cart.reduce((sum, item) => sum + item.qty, 0);
-}
-
-function addToCart(productName) {
-    if (!productsDB[productName]) return;
-    const existingItem = cart.find(i => i.name === productName);
-    if (existingItem) {
-        existingItem.qty += 1;
-    } else {
-        cart.push({ name: productName, qty: 1 });
-    }
-    renderCart();
-}
-
-function changeQty(name, delta, newValue) {
-    const item = cart.find(i => i.name === name);
-    if (!item) return;
-    if (newValue !== undefined) {
-        const val = parseInt(newValue, 10);
-        if (isNaN(val) || val < 1) {
-            removeFromCart(name);
-            return;
-        }
-        item.qty = val;
-    } else {
-        item.qty += delta;
-    }
-    if (item.qty < 1) removeFromCart(name);
-    else renderCart();
-}
-
-function removeFromCart(name) {
-    cart = cart.filter(i => i.name !== name);
-    renderCart();
-}
-
-function goToCheckout() {
-    alert('Переход на страницу оплаты. В реальном проекте здесь откроется платежный шлюз.');
-}
-
-openCartBtn.addEventListener('click', () => {
-    renderCart();
-    openOverlay(cartOverlay);
-});
-closeCartBtn.addEventListener('click', () => closeOverlay(cartOverlay));
-cartOverlay.addEventListener('click', (e) => {
-    if (e.target === cartOverlay) closeOverlay(cartOverlay);
-});
-
-// --- ЛОГИКА ОПРОСНИКА ---
-const closeSurveyBtn = document.getElementById('closeSurveyBtn');
-const submitSurveyBtn = document.getElementById('submitSurveyBtn');
-const surveyForm = document.getElementById('surveyForm');
-
-// Enter внутри формы не должен перезагружать страницу
-surveyForm.addEventListener('submit', (e) => e.preventDefault());
-
-submitSurveyBtn.addEventListener('click', () => {
-    const selected = surveyForm.querySelector('input[type="radio"]:checked');
-    alert(`Спасибо! Вы выбрали: ${getSurveyLabel(selected.value)}. Мы подготовим для вас спецпредложение.`);
-    closeOverlay(surveyOverlay);
-});
-closeSurveyBtn.addEventListener('click', () => closeOverlay(surveyOverlay));
-surveyOverlay.addEventListener('click', (e) => {
-    if (e.target === surveyOverlay) closeOverlay(surveyOverlay);
-});
-
-function getSurveyLabel(value) {
-    const map = {
-        office: 'Офис или коворкинг',
-        cafe: 'Кафе, ресторан или фудкорт',
-        factory: 'Производственный цех или склад',
-        home: 'Частный дом или квартира'
-    };
-    return map[value] || 'Неизвестно';
-}
-
-// --- ЛОГИКА ПОДДЕРЖКИ ---
-const supportBtn = document.getElementById('supportBtn');
-const closeSupportBtn = document.getElementById('closeSupportBtn');
-const supportChat = document.getElementById('supportChat');
-const supportInput = document.getElementById('supportInput');
-const supportSendBtn = document.getElementById('supportSendBtn');
-
-function openSupport() {
-    openOverlay(supportOverlay);
-    supportInput.focus();
-}
-
-function addMessage(text, sender) {
-    const msgDiv = document.createElement('div');
-    msgDiv.classList.add('message', sender);
-    msgDiv.textContent = text;
-    supportChat.appendChild(msgDiv);
-    supportChat.scrollTop = supportChat.scrollHeight; // Автоматическая прокрутка вниз
-}
-
-function sendSupportMessage() {
-    const text = supportInput.value.trim();
-    if (!text) return;
-
-    addMessage(text, 'user');
-    supportInput.value = '';
-
-    // Имитация ответа оператора (задержка 1.5 секунды)
-    setTimeout(() => {
-        addMessage('Здравствуйте! Спасибо за обращение. Ваш запрос передан специалистам. Мы ответим вам в течение 5 минут.', 'bot');
-    }, 1500);
-}
-
-supportSendBtn.addEventListener('click', sendSupportMessage);
-supportInput.addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') sendSupportMessage();
-});
-supportBtn.addEventListener('click', openSupport);
-document.getElementById('footerSupportLink').addEventListener('click', (e) => {
-    e.preventDefault();
-    openSupport();
-});
-closeSupportBtn.addEventListener('click', () => closeOverlay(supportOverlay));
-supportOverlay.addEventListener('click', (e) => {
-    if (e.target === supportOverlay) closeOverlay(supportOverlay);
-});
-
-// --- ПЛАВНАЯ ПРОКРУТКА ---
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener('click', function (e) {
-        const hash = this.getAttribute('href');
-        if (hash === '#') return; // пустые якоря (например, логотип) просто игнорируем
-        const target = document.querySelector(hash);
-        if (!target) return;
-        e.preventDefault();
-        target.scrollIntoView({ behavior: 'smooth' });
-    });
-});
-
-// --- АНИМАЦИЯ ПОЯВЛЕНИЯ ПРИ ПРОКРУТКЕ ---
-// Активируем скрытие только при работающем JS, чтобы контент не пропадал без скриптов
-document.documentElement.classList.add('js');
-const revealObserver = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-        if (entry.isIntersecting) {
-            entry.target.classList.add('visible');
-            revealObserver.unobserve(entry.target);
-        }
-    });
-}, { threshold: 0.12 });
-document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
-
-// --- ТАЙМЕР ОПРОСНИКА ---
-// Показываем опрос через 15 секунд. Чтобы отключить авто-открытие, закомментируйте этот блок.
-// Флаг "показан" ставится только при реальном показе: если в момент таймера
-// открыто другое окно, пробуем снова через 15 секунд.
-function tryShowSurvey() {
-    if (sessionStorage.getItem('surveyShown')) return;
-    if (anyOverlayOpen()) {
-        setTimeout(tryShowSurvey, 15000);
-        return;
-    }
-    openOverlay(surveyOverlay);
-    sessionStorage.setItem('surveyShown', 'true');
-}
-setTimeout(tryShowSurvey, 15000);
-</script>
-
+<script src="assets/js/app.js"></script>
 </body>
 </html>
