@@ -1,20 +1,11 @@
 {
-  "updatedAt": "2026-10-17T22:04:24.959Z",
+  "updatedAt": "2026-10-17T22:10:40.584Z",
   "products": {
     "eco": {
       "price": 249900
     },
     "pro": {
       "price": 499900,
-      "inStock": false
-    },
-    "bags": {
-      "inStock": true
-    },
-    "wifi": {
-      "inStock": true
-    },
-    "servo": {
       "inStock": false
     }
   },
@@ -37,7 +28,7 @@
       "model": "SmartBin Pro",
       "place": "Переговорная «Волга»",
       "levels": {
-        "plastic": 50,
+        "plastic": 54,
         "glass": 62,
         "paper": 31,
         "organic": 55
