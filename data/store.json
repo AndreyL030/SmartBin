@@ -1,7 +1,17 @@
 {
-  "updatedAt": "2026-10-17T00:00:00.000Z",
-  "products": {},
-  "orders": [],
-  "orderStatuses": {},
-  "bins": []
+    "updatedAt":  "2026-10-17T21:02:11.6705295Z",
+    "orderStatuses":  {
+
+                      },
+    "products":  {
+                     "eco":  {
+                                 "price":  26990
+                             }
+                 },
+    "orders":  [
+
+               ],
+    "bins":  [
+
+             ]
 }
