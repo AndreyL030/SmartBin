@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Диагностика синхронизации — SmartBin</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' rx='12' fill='%232563eb'/%3E%3C/svg%3E">
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body class="admin-body">
+
+<main style="max-width:860px;margin:0 auto;padding:32px 20px 60px">
+    <p style="margin-bottom:8px"><a href="admin.html" style="color:var(--primary);font-weight:600;font-size:.9rem">← В админ-панель</a></p>
+    <h1 style="font-size:1.7rem;letter-spacing:-.02em;margin-bottom:8px">Диагностика синхронизации</h1>
+    <p style="color:var(--text-muted);margin-bottom:22px">
+        Проверяет, видит ли браузер файл данных в репозитории и может ли в него писать.
+        Всё выполняется локально, ничего никуда не отправляется без нажатия кнопки.
+    </p>
+
+    <div class="panel" style="margin-bottom:20px">
+        <div class="panel__head"><h2>Проверки</h2></div>
+        <div id="rows"></div>
+    </div>
+
+    <div class="admin-actions" style="margin-bottom:20px">
+        <button class="btn btn--sm btn--grad" type="button" id="btnPush">Отправить тестовую запись</button>
+        <button class="btn btn--sm btn--outline" type="button" id="btnPull">Загрузить с GitHub</button>
+        <button class="btn btn--sm btn--outline" type="button" id="btnRerun">Перепроверить</button>
+    </div>
+
+    <div class="table-wrap">
+        <div class="table-wrap__head"><h2>Журнал</h2></div>
+        <pre id="log" style="padding:18px 20px;font-size:.82rem;line-height:1.6;white-space:pre-wrap;word-break:break-word;margin:0;color:var(--text-dark)">проверяю…</pre>
+    </div>
+
+    <div class="panel" style="margin-top:20px">
+        <div class="panel__head"><h2>Что означают результаты</h2></div>
+        <ul style="padding:0 20px 20px;color:var(--text-muted);font-size:.88rem;line-height:1.7;list-style:none">
+            <li>• <b>401</b> — токен неверный или истёк.</li>
+            <li>• <b>403</b> — у токена нет права <b>Contents: Read and write</b> на этот репозиторий.</li>
+            <li>• <b>404</b> в записи — токену не дали доступ к репозиторию (Repository access).</li>
+            <li>• <b>not-configured</b> — в админке не сохранён токен или выключен переключатель записи.</li>
+            <li>• <b>Чтение не работает</b> — неверные владелец/репозиторий/путь в разделе «Синхронизация».</li>
+        </ul>
+    </div>
+</main>
+
+<script src="assets/js/sync.js"></script>
+<script>
+    (function () {
+        'use strict';
+
+        var rowsEl = document.getElementById('rows');
+        var logEl = document.getElementById('log');
+        var params = new URLSearchParams(window.location.search);
+        var repoOverride = params.get('repo');
+
+        function log(text) {
+            logEl.textContent += '\n' + text;
+        }
+
+        function row(label, tone, detail) {
+            var wrap = document.createElement('div');
+            wrap.style.cssText = 'display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-bottom:1px solid #eef2f7';
+            var pill = document.createElement('span');
+            pill.className = 'pill ' + (tone === 'ok' ? 'pill--done' : tone === 'bad' ? 'pill--danger' : tone === 'warn' ? 'pill--progress' : 'pill--new');
+            pill.textContent = tone === 'ok' ? 'ок' : tone === 'bad' ? 'ошибка' : tone === 'warn' ? 'внимание' : 'инфо';
+            pill.style.flex = '0 0 auto';
+            var body = document.createElement('div');
+            var title = document.createElement('b');
+            title.textContent = label;
+            title.style.fontSize = '.92rem';
+            var desc = document.createElement('div');
+            desc.textContent = detail;
+            desc.style.cssText = 'color:var(--text-muted);font-size:.85rem;margin-top:2px';
+            body.appendChild(title);
+            body.appendChild(desc);
+            wrap.appendChild(pill);
+            wrap.appendChild(body);
+            rowsEl.appendChild(wrap);
+        }
+
+        function decode(base64) {
+            var binary = atob(String(base64).replace(/\s/g, ''));
+            var bytes = new Uint8Array(binary.length);
+            for (var i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i);
+            return new TextDecoder().decode(bytes);
+        }
+
+        function summary(data) {
+            if (!data) return 'данных нет';
+            var products = data.products ? Object.keys(data.products).length : 0;
+            var orders = Array.isArray(data.orders) ? data.orders.length : 0;
+            var bins = Array.isArray(data.bins) ? data.bins.length : 0;
+            return 'товаров с правками: ' + products + ', заказов: ' + orders + ', урн: ' + bins +
+                (data.updatedAt ? ', обновлено: ' + data.updatedAt : '');
+        }
+
+        function apiBase(cfg) {
+            return 'https://api.github.com/repos/' + cfg.owner + '/' + cfg.repo + '/contents/' + cfg.path + '?ref=' + encodeURIComponent(cfg.branch);
+        }
+
+        async function run() {
+            rowsEl.innerHTML = '';
+            logEl.textContent = 'запуск проверки…';
+
+            var cfg = window.SBSync ? SBSync.readConfig() : null;
+            if (!cfg) {
+                row('Модуль синхронизации', 'bad', 'assets/js/sync.js не загрузился');
+                return;
+            }
+
+            if (repoOverride && repoOverride.indexOf('/') !== -1) {
+                var parts = repoOverride.split('/');
+                cfg.owner = parts[0];
+                cfg.repo = parts[1];
+                log('репозиторий из ссылки: ' + cfg.owner + '/' + cfg.repo);
+            }
+
+            var state = SBSync.status().state;
+            log('адрес страницы: ' + location.href);
+            log('репозиторий: ' + (cfg.owner || '—') + '/' + (cfg.repo || '—') + ', ветка ' + cfg.branch + ', путь ' + cfg.path);
+            log('состояние синхронизации: ' + state);
+
+            if (!cfg.owner || !cfg.repo) {
+                row('Репозиторий не определён', 'bad', 'Укажите владельца и репозиторий в админке → «Синхронизация»');
+                return;
+            }
+
+            row('Репозиторий в настройках', 'ok', cfg.owner + '/' + cfg.repo + ' · ветка ' + cfg.branch + ' · ' + cfg.path);
+
+            // 1. Чтение через API
+            try {
+                var res = await fetch(apiBase(cfg), { cache: 'no-store' });
+                log('GET ' + apiBase(cfg) + ' → HTTP ' + res.status);
+                if (res.ok) {
+                    var json = await res.json();
+                    var data = JSON.parse(decode(json.content));
+                    row('Чтение через API', 'ok', 'HTTP 200 · sha ' + String(json.sha).slice(0, 7) + ' · ' + summary(data));
+                } else if (res.status === 404) {
+                    row('Чтение через API', 'bad', 'HTTP 404 — файла нет или неверный путь. Нажмите «Отправить тестовую запись».');
+                } else {
+                    row('Чтение через API', 'warn', 'HTTP ' + res.status + ' — возможно, исчерпан лимит запросов без токена (60 в час)');
+                }
+            } catch (err) {
+                row('Чтение через API', 'bad', 'сеть недоступна: ' + err.message);
+            }
+
+            // 2. Чтение через raw
+            try {
+                var raw = await fetch(SBSync.sourceUrl() + '?t=' + Date.now(), { cache: 'no-store' });
+                if (raw.ok) {
+                    var rawData = await raw.json();
+                    row('Чтение через raw', 'ok', 'HTTP 200 · ' + summary(rawData) + ' (кэш до 5 минут)');
+                } else {
+                    row('Чтение через raw', 'warn', 'HTTP ' + raw.status);
+                }
+            } catch (err) {
+                row('Чтение через raw', 'warn', 'недоступно: ' + err.message);
+            }
+
+            // 3. Права записи
+            if (state === 'sync') {
+                row('Токен сохранён', 'ok', 'переключатель записи включён');
+            } else if (state === 'read-only') {
+                row('Запись выключена', 'warn', 'нужен токен и включённый переключатель в админке');
+            }
+
+            // 4. Кэш страницы
+            try {
+                var cached = JSON.parse(localStorage.getItem('smartbin_shared_cache_v1') || 'null');
+                if (cached) {
+                    row('Кэш витрины', 'info', 'обновлён ' + new Date(cached.ts).toLocaleString('ru-RU') + ' · ' + summary(cached.data));
+                } else {
+                    row('Кэш витрины', 'info', 'пусто — витрина прочитает файл при следующей загрузке');
+                }
+            } catch (err) {
+                row('Кэш витрины', 'warn', 'недоступен');
+            }
+
+            log('проверка завершена');
+        }
+
+        document.getElementById('btnRerun').addEventListener('click', function () { run(); });
+
+        document.getElementById('btnPull').addEventListener('click', function () {
+            log('--- загрузка через SBSync.pull() ---');
+            SBSync.pull({ timeout: 8000 }).then(function (data) {
+                if (!data) { log('pull: пусто (нет сети, файла или доступа)'); return; }
+                log('pull: ' + summary(data));
+                try {
+                    localStorage.setItem('smartbin_shared_cache_v1', JSON.stringify({ ts: Date.now(), data: data }));
+                    log('кэш витрины обновлён');
+                } catch (err) { log('кэш не записался: ' + err.message); }
+            });
+        });
+
+        document.getElementById('btnPush').addEventListener('click', function () {
+            log('--- проверка записи ---');
+            if (!SBSync.isWritable()) {
+                log('запись невозможна: not-configured (нет токена или выключен переключатель)');
+                return;
+            }
+            var payload = {
+                updatedAt: new Date().toISOString(),
+                products: {}, orders: [], orderStatuses: {}, bins: []
+            };
+            SBSync.push(payload).then(function (result) {
+                log('push: ' + JSON.stringify(result));
+                if (result.ok) {
+                    log('успех — файл в репозитории обновлён');
+                } else if (result.status === 401) {
+                    log('401 — токен неверный или истёк');
+                } else if (result.status === 403) {
+                    log('403 — нет права Contents: Read and write');
+                } else if (result.status === 404) {
+                    log('404 — токену не дали доступ к репозиторию');
+                } else {
+                    log('не удалось: ' + (result.reason || result.status || 'неизвестно'));
+                }
+            });
+        });
+
+        run();
+    })();
+</script>
+</body>
+</html>
