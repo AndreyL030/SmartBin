@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SmartBin — Умная мусорка с автоматической сортировкой</title>
+    <meta name="description" content="SmartBin автоматически определяет тип отходов и отправляет их в нужный контейнер. Умные урны для офиса, производства и дома. Сделано в России.">
+    
     <style>
         :root {
             --primary: #0052cc;
@@ -14,6 +16,7 @@
             --border: #dee2e6;
             --radius: 12px;
             --danger: #dc3545;
+            --support-bg: #25d366; /* Зеленый для поддержки (WhatsApp/Telegram стиль) */
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -84,7 +87,91 @@
         .empty-cart { text-align: center; padding: 40px 20px; color: var(--text-muted); }
         .empty-cart svg { width: 60px; height: 60px; margin-bottom: 15px; opacity: 0.5; }
 
-        footer { background-color: var(--text-dark); color: #adb5bd; text-align: center; padding: 40px 20px; margin-top: 80px; }
+        /* --- СТИЛИ ОПРОСНИКА --- */
+        .survey-option {
+            display: flex;
+            align-items: center;
+            padding: 12px 0;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: background-color 0.2s;
+        }
+        .survey-option:hover {
+            background-color: var(--bg-light);
+        }
+        .survey-option input[type="radio"] {
+            margin-right: 12px;
+            width: 18px;
+            height: 18px;
+        }
+        .survey-option span {
+            font-size: 1rem;
+            color: var(--text-dark);
+        }
+
+        /* --- СТИЛИ ПОДДЕРЖКИ --- */
+        .support-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background-color: var(--support-bg);
+            color: white;
+            border: none;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            font-size: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 3000;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .support-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .support-overlay { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); 
+            display: none; align-items: center; justify-content: center; 
+            z-index: 4000; padding: 20px;
+        }
+        .support-modal { 
+            background: #fff; width: 100%; max-width: 400px; 
+            height: 600px; border-radius: var(--radius); 
+            display: flex; flex-direction: column; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        .support-header { 
+            background-color: var(--support-bg); color: white; 
+            padding: 15px 20px; display: flex; justify-content: space-between; align-items: center;
+        }
+        .support-header h2 { margin: 0; font-size: 1.2rem; }
+        .close-support { background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; }
+        .support-body { flex-grow: 1; padding: 20px; background-color: #f0f2f5; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
+        .message { 
+            max-width: 80%; padding: 12px 16px; border-radius: 18px; 
+            font-size: 0.95rem; line-height: 1.4; 
+        }
+        .message.bot { align-self: flex-start; background-color: #e9ecef; color: var(--text-dark); border-bottom-left-radius: 4px; }
+        .message.user { align-self: flex-end; background-color: var(--primary); color: white; border-bottom-right-radius: 4px; }
+        .support-footer { padding: 15px 20px; border-top: 1px solid var(--border); display: flex; gap: 10px; }
+        .support-input { 
+            flex-grow: 1; border: 1px solid var(--border); border-radius: 20px; 
+            padding: 10px 15px; font-size: 1rem; 
+        }
+        .support-input:focus { outline: none; border-color: var(--primary); }
+        .support-send { 
+            width: 40px; height: 40px; border: none; border-radius: 50%; 
+            background-color: var(--primary); color: white; cursor: pointer; 
+            display: flex; align-items: center; justify-content: center;
+        }
+        .support-send:hover { background-color: var(--primary-dark); }
 
         @media (max-width: 768px) {
             .header-inner { flex-wrap: wrap; gap: 15px; }
@@ -94,6 +181,8 @@
             .cart-item { flex-wrap: wrap; gap: 15px; }
             .item-image { width: 60px; height: 60px; }
             .cart-modal { max-height: 95vh; }
+            .support-btn { bottom: 15px; right: 15px; width: 55px; height: 55px; font-size: 1.8rem; }
+            .support-modal { height: 85vh; }
         }
     </style>
 </head>
@@ -103,7 +192,7 @@
     <div class="container header-inner">
         <!-- ЛОГОТИП В ФОРМАТЕ BASE64 -->
         <div style="display: flex; align-items: center; gap: 12px;">
-            <img src="https://giga.chat/files/public/generated/6cb60b46-aaec-4e21-b645-a7c2586ebad1" alt="SmartBin" style="width: 50px; height: 50px; border-radius: 8px;">
+            <img src="https://giga.chat/files/public/generated/6cb60b46-aaec-4e21-b645-a7c2586ebad1" alt="Логотип SmartBin" style="width: 50px; height: 50px; border-radius: 8px;">
             <h1 style="margin: 0; font-size: 1.5rem;">SmartBin</h1>
         </div>
         
@@ -127,7 +216,7 @@
         <div class="products-grid">
             <div class="product-card">
                 <h3>SmartBin Eco</h3>
-                <p>Идеально небольшого офиса.</p>
+                <p>Идеально для небольшого офиса.</p>
                 <div class="price">24 990 ₽</div>
                 <ul class="features">
                     <li>✓ Объем: 40 литров</li>
@@ -170,6 +259,14 @@
                 <div class="price">890 ₽</div>
                 <button class="btn btn-outline" onclick="addToCart('Комплект мешков (50 шт)')">В корзину</button>
             </div>
+
+            <div class="part-item">
+                <div style="font-size: 2rem; margin-bottom: 10px;">📡</div>
+                <h4>Wi-Fi / Bluetooth модуль</h4>
+                <p>Для обновления прошивки и связи с умным домом.</p>
+                <div class="price">1 990 ₽</div>
+                <button class="btn btn-outline" onclick="addToCart('Wi-Fi / Bluetooth модуль')">В корзину</button>
+            </div>
         </div>
     </section>
 </main>
@@ -204,22 +301,73 @@
     </div>
 </div>
 
-<footer>
-    <div class="container">
-        <p>&copy; 2024 SmartBin Robotics. Сделано в России.</p>
-        <p style="margin-top: 10px; font-size: 0.9rem;">
-            <a href="tel:+74950000000" style="color: #adb5bd; text-decoration: none;">+7 (495) 000-00-00</a> | 
-            <a href="mailto:support@smartbin.ru" style="color: #adb5bd; text-decoration: none;">support@smartbin.ru</a>
-        </p>
+<!-- Модальное окно опросника -->
+<div class="cart-overlay" id="surveyOverlay">
+    <div class="cart-modal" style="max-width: 500px;">
+        <div class="cart-header">
+            <h2>📝 Помогите нам стать лучше</h2>
+            <button class="close-cart" id="closeSurveyBtn">&times;</button>
+        </div>
+        
+        <div class="cart-body" style="padding: 20px 30px;">
+            <p style="font-size: 1rem; color: var(--text-dark); margin-bottom: 20px;">
+                Для какой среды вы подбираете SmartBin?
+            </p>
+            <form id="surveyForm">
+                <label class="survey-option">
+                    <input type="radio" name="surveyTarget" value="office" checked>
+                    <span>Офис или коворкинг</span>
+                </label>
+                <label class="survey-option">
+                    <input type="radio" name="surveyTarget" value="cafe">
+                    <span>Кафе, ресторан или фудкорт</span>
+                </label>
+                <label class="survey-option">
+                    <input type="radio" name="surveyTarget" value="factory">
+                    <span>Производственный цех или склад</span>
+                </label>
+                <label class="survey-option">
+                    <input type="radio" name="surveyTarget" value="home">
+                    <span>Частный дом или квартира</span>
+                </label>
+            </form>
+        </div>
+
+        <div class="cart-footer">
+            <button id="submitSurveyBtn" class="btn-checkout">Отправить</button>
+        </div>
     </div>
-</footer>
+</div>
+
+<!-- Модальное окно поддержки -->
+<div class="support-overlay" id="supportOverlay">
+    <div class="support-modal">
+        <div class="support-header">
+            <h2>💬 Поддержка SmartBin</h2>
+            <button class="close-support" id="closeSupportBtn">&times;</button>
+        </div>
+        
+        <div class="support-body" id="supportChat">
+            <!-- Сообщения будут добавляться сюда через JS -->
+            <div class="message bot">Здравствуйте! Задайте ваш вопрос, и мы поможем подобрать оборудование.</div>
+        </div>
+        
+        <div class="support-footer">
+            <input type="text" id="supportInput" class="support-input" placeholder="Введите сообщение...">
+            <button id="supportSendBtn" class="support-send">→</button>
+        </div>
+    </div>
+</div>
+
+<!-- Кнопка поддержки -->
+<button class="support-btn" id="supportBtn" aria-label="Открыть чат поддержки">?</button>
 
 <script>
+document.addEventListener('DOMContentLoaded', function() {
     // --- БАЗА ДАННЫХ ТОВАРОВ ---
     const productsDB = {
         "SmartBin Eco": { price: 24990 },
         "SmartBin Pro": { price: 49990 },
-        "Камера распознавания": { price: 4990 },
         "Сервопривод лотка": { price: 2490 },
         "Комплект мешков (50 шт)": { price: 890 },
         "Wi-Fi / Bluetooth модуль": { price: 1990 }
@@ -288,7 +436,12 @@
         const item = cart.find(i => i.name === name);
         if (!item) return;
         if (newValue !== undefined) {
-            item.qty = parseInt(newValue);
+            const val = parseInt(newValue);
+            if (isNaN(val) || val < 1) {
+                removeFromCart(name);
+                return;
+            }
+            item.qty = val;
         } else {
             item.qty += delta;
         }
@@ -303,10 +456,8 @@
 
     function goToCheckout() {
         alert('Переход на страницу оплаты. В реальном проекте здесь откроется платежный шлюз.');
-        // window.location.href = '/payment';
     }
 
-    // --- УПРАВЛЕНИЕ МОДАЛЬНЫМ ОКНОМ ---
     openCartBtn.addEventListener('click', () => {
         renderCart();
         cartOverlay.style.display = 'flex';
@@ -318,6 +469,83 @@
         if (e.target === cartOverlay) cartOverlay.style.display = 'none';
     });
 
+    // --- ЛОГИКА ОПРОСНИКА ---
+    const surveyOverlay = document.getElementById('surveyOverlay');
+    const closeSurveyBtn = document.getElementById('closeSurveyBtn');
+    const submitSurveyBtn = document.getElementById('submitSurveyBtn');
+    const surveyForm = document.getElementById('surveyForm');
+
+    function openSurvey() {
+        if (cartOverlay.style.display === 'flex') return;
+        surveyOverlay.style.display = 'flex';
+    }
+    function closeSurvey() {
+        surveyOverlay.style.display = 'none';
+    }
+
+    submitSurveyBtn.addEventListener('click', () => {
+        const selected = surveyForm.querySelector('input[type="radio"]:checked').value;
+        alert(`Спасибо! Вы выбрали: ${getSurveyLabel(selected)}. Мы подготовим для вас спецпредложение.`);
+        closeSurvey();
+    });
+    closeSurveyBtn.addEventListener('click', closeSurvey);
+    surveyOverlay.addEventListener('click', (e) => {
+        if (e.target === surveyOverlay) closeSurvey();
+    });
+
+    function getSurveyLabel(value) {
+        const map = { office: 'Офис', cafe: 'Ресторан', factory: 'Производство', home: 'Дом' };
+        return map[value] || 'Неизвестно';
+    }
+
+    // --- ЛОГИКА ПОДДЕРЖКИ ---
+    const supportBtn = document.getElementById('supportBtn');
+    const supportOverlay = document.getElementById('supportOverlay');
+    const closeSupportBtn = document.getElementById('closeSupportBtn');
+    const supportChat = document.getElementById('supportChat');
+    const supportInput = document.getElementById('supportInput');
+    const supportSendBtn = document.getElementById('supportSendBtn');
+
+    function openSupport() {
+        if (cartOverlay.style.display === 'flex' || surveyOverlay.style.display === 'flex') return;
+        supportOverlay.style.display = 'flex';
+        supportInput.focus();
+    }
+    function closeSupport() {
+        supportOverlay.style.display = 'none';
+    }
+
+    function addMessage(text, sender) {
+        const msgDiv = document.createElement('div');
+        msgDiv.classList.add('message', sender);
+        msgDiv.textContent = text;
+        supportChat.appendChild(msgDiv);
+        supportChat.scrollTop = supportChat.scrollHeight; // Автоматическая прокрутка вниз
+    }
+
+    function sendSupportMessage() {
+        const text = supportInput.value.trim();
+        if (!text) return;
+        
+        addMessage(text, 'user');
+        supportInput.value = '';
+
+        // Имитация ответа оператора (задержка 1.5 секунды)
+        setTimeout(() => {
+            addMessage('Здравствуйте! Спасибо за обращение. Ваш запрос передан специалистам. Мы ответим вам в течение 5 минут.', 'bot');
+        }, 1500);
+    }
+
+    supportSendBtn.addEventListener('click', sendSupportMessage);
+    supportInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') sendSupportMessage();
+    });
+    supportBtn.addEventListener('click', openSupport);
+    closeSupportBtn.addEventListener('click', closeSupport);
+    supportOverlay.addEventListener('click', (e) => {
+        if (e.target === supportOverlay) closeSupport();
+    });
+
     // --- ПЛАВНАЯ ПРОКРУТКА ---
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         anchor.addEventListener('click', function (e) {
@@ -326,6 +554,16 @@
             target.scrollIntoView({ behavior: 'smooth' });
         });
     });
+
+    // --- ТАЙМЕР ОПРОСНИКА ---
+    // Показываем опрос через 15 секунд. Чтобы отключить авто-открытие, закомментируйте этот блок.
+    setTimeout(() => {
+        if (!sessionStorage.getItem('surveyShown')) {
+            openSurvey();
+            sessionStorage.setItem('surveyShown', 'true');
+        }
+    }, 15000);
+});
 </script>
 
 </body>
