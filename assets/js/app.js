@@ -141,6 +141,23 @@
         }
     ];
 
+    /* ---------- Правки каталога из админ-панели ---------- */
+    (function applyAdminOverrides() {
+        try {
+            const raw = localStorage.getItem('smartbin_product_overrides_v1');
+            if (!raw) return;
+            const overrides = JSON.parse(raw) || {};
+            PRODUCTS.forEach(function (product) {
+                const patch = overrides[product.id];
+                if (!patch) return;
+                if (typeof patch.price === 'number' && patch.price > 0) product.price = Math.round(patch.price);
+                if (typeof patch.inStock === 'boolean') product.inStock = patch.inStock;
+            });
+        } catch (err) {
+            /* повреждённые данные игнорируем — витрина работает на исходных ценах */
+        }
+    })();
+
     const CART_KEY = 'smartbin_cart_v1';
     const ORDERS_KEY = 'smartbin_orders_v1';
     const FREE_DELIVERY_FROM = 50000;
