@@ -142,17 +142,19 @@
     ];
 
     /* ---------- Правки каталога из админ-панели ---------- */
-    (function applyAdminOverrides() {
+    function applyProductPatch(map) {
+        if (!map || typeof map !== 'object') return;
+        PRODUCTS.forEach(function (product) {
+            const patch = map[product.id];
+            if (!patch) return;
+            if (typeof patch.price === 'number' && patch.price > 0) product.price = Math.round(patch.price);
+            if (typeof patch.inStock === 'boolean') product.inStock = patch.inStock;
+        });
+    }
+
+    (function applyLocalOverrides() {
         try {
-            const raw = localStorage.getItem('smartbin_product_overrides_v1');
-            if (!raw) return;
-            const overrides = JSON.parse(raw) || {};
-            PRODUCTS.forEach(function (product) {
-                const patch = overrides[product.id];
-                if (!patch) return;
-                if (typeof patch.price === 'number' && patch.price > 0) product.price = Math.round(patch.price);
-                if (typeof patch.inStock === 'boolean') product.inStock = patch.inStock;
-            });
+            applyProductPatch(JSON.parse(localStorage.getItem('smartbin_product_overrides_v1') || '{}'));
         } catch (err) {
             /* повреждённые данные игнорируем — витрина работает на исходных ценах */
         }
@@ -1163,7 +1165,7 @@
     }
 
     /* ---------- Запуск ---------- */
-    function boot() {
+    function startApp() {
         initHeader();
         initReveal();
         bindAddToCart(document);
@@ -1172,6 +1174,21 @@
         initProduct();
         initCartPage();
         initSupport();
+    }
+
+    function boot() {
+        if (!window.SBSync) {
+            startApp();
+            return;
+        }
+
+        // Общие данные из репозитория важнее локальных правок: сначала читаем,
+        // потом рисуем страницу, чтобы не было «мигания» цен.
+        window.SBSync.loadShared().then(function (shared) {
+            if (shared && shared.products) applyProductPatch(shared.products);
+        }).catch(function () {
+            /* нет сети — работаем на локальных данных */
+        }).then(startApp);
     }
 
     if (document.readyState === 'loading') {

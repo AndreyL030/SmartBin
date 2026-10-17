@@ -42,7 +42,8 @@
         overview: { title: 'Обзор', subtitle: 'Заказы, выручка и состояние урн' },
         orders: { title: 'Заказы', subtitle: 'Клиенты, суммы и статусы' },
         products: { title: 'Товары', subtitle: 'Цены и наличие на витрине' },
-        bins: { title: 'Урны', subtitle: 'Заполнение отсеков по датчикам' }
+        bins: { title: 'Урны', subtitle: 'Заполнение отсеков по датчикам' },
+        sync: { title: 'Синхронизация', subtitle: 'Общие данные для всех устройств' }
     };
 
     const loginEl = document.querySelector('[data-login]');
@@ -77,6 +78,7 @@
                 SB.toast('Не удалось сохранить', { type: 'error', text: 'Хранилище браузера недоступно.' });
             }
         }
+        schedulePush();
     }
 
     function escapeHtml(value) {
@@ -217,6 +219,7 @@
         if (name === 'orders') renderOrders();
         if (name === 'products') renderProducts();
         if (name === 'bins') renderBins();
+        if (name === 'sync') renderSyncForm();
     }
 
     navButtons.forEach(function (btn) {
@@ -591,6 +594,183 @@
         }, 8000);
     }
 
+    /* ---------- Синхронизация с GitHub ---------- */
+    const SYNC_LABELS = {
+        off: 'не настроено',
+        read: 'только чтение',
+        ok: 'синхронизировано',
+        sending: 'обмен с GitHub…',
+        error: 'ошибка синхронизации',
+        offline: 'файл недоступен'
+    };
+
+    let pushTimer = null;
+    let pushInFlight = false;
+
+    function setSyncState(state, text) {
+        const pill = document.querySelector('[data-sync-state]');
+        if (!pill) return;
+        pill.textContent = text || SYNC_LABELS[state] || state;
+        pill.className = 'pill ' + (state === 'ok' ? 'pill--done' : (state === 'error' || state === 'offline') ? 'pill--danger' : 'pill--new');
+    }
+
+    function renderSyncForm() {
+        if (!window.SBSync) {
+            setSyncState('error', 'модуль не загружен');
+            return;
+        }
+
+        const cfg = SBSync.readConfig();
+        const put = function (selector, value) {
+            const el = document.querySelector(selector);
+            if (el) el.value = value;
+        };
+
+        put('[data-sync-owner]', cfg.owner);
+        put('[data-sync-repo]', cfg.repo);
+        put('[data-sync-branch]', cfg.branch);
+        put('[data-sync-path]', cfg.path);
+        put('[data-sync-token]', cfg.token);
+
+        const enabled = document.querySelector('[data-sync-enabled]');
+        if (enabled) enabled.checked = Boolean(cfg.enabled);
+
+        const state = SBSync.status().state;
+        setSyncState(state === 'sync' ? 'ok' : state === 'read-only' ? 'read' : 'off');
+    }
+
+    function buildPayload() {
+        return {
+            updatedAt: new Date().toISOString(),
+            products: getOverrides(),
+            orders: getOrders(),
+            orderStatuses: getStatuses(),
+            bins: getBins()
+        };
+    }
+
+    function schedulePush() {
+        if (!window.SBSync || !SBSync.isWritable()) return;
+        window.clearTimeout(pushTimer);
+        pushTimer = window.setTimeout(function () { pushNow(false); }, 900);
+    }
+
+    function pushNow(manual) {
+        if (!window.SBSync || pushInFlight) return;
+
+        if (SBSync.status().state !== 'sync') {
+            if (manual) {
+                toast('Запись выключена', { type: 'warning', text: 'Укажите токен и включите переключатель.' });
+            }
+            return;
+        }
+
+        pushInFlight = true;
+        setSyncState('sending');
+
+        SBSync.push(buildPayload()).then(function (result) {
+            pushInFlight = false;
+
+            if (result.ok) {
+                setSyncState('ok');
+                toast('Отправлено на GitHub', {
+                    type: 'success',
+                    text: 'Другие устройства увидят изменения в течение минуты.'
+                });
+                return;
+            }
+
+            setSyncState('error');
+            toast('Не удалось отправить', {
+                type: 'error',
+                text: result.reason === 'not-configured'
+                    ? 'Не задан токен доступа.'
+                    : 'Проверьте права токена: Contents — Read and write.'
+            });
+        });
+    }
+
+    function hydrateFromShared(manual) {
+        if (!window.SBSync) return;
+
+        setSyncState('sending', 'загрузка…');
+
+        SBSync.pull({ timeout: 8000 }).then(function (shared) {
+            if (!shared) {
+                setSyncState('offline');
+                if (manual) {
+                    toast('Не удалось загрузить', { type: 'error', text: 'Проверьте владельца, репозиторий и имя файла.' });
+                }
+                return;
+            }
+
+            const hasData = (shared.products && Object.keys(shared.products).length) ||
+                (Array.isArray(shared.orders) && shared.orders.length) ||
+                (Array.isArray(shared.bins) && shared.bins.length);
+
+            if (!hasData && !SBSync.isWritable()) {
+                setSyncState('off');
+                if (manual) {
+                    toast('Файл пока пустой', { type: 'info', text: 'Данных в репозитории нет — работаем локально.' });
+                }
+                return;
+            }
+
+            try {
+                if (shared.products) localStorage.setItem(OVERRIDES_KEY, JSON.stringify(shared.products));
+                if (Array.isArray(shared.orders)) localStorage.setItem(ORDERS_KEY, JSON.stringify(shared.orders));
+                if (shared.orderStatuses) localStorage.setItem(STATUS_KEY, JSON.stringify(shared.orderStatuses));
+                if (Array.isArray(shared.bins) && shared.bins.length) localStorage.setItem(BINS_KEY, JSON.stringify(shared.bins));
+            } catch (err) {
+                /* хранилище недоступно — показываем то, что уже есть */
+            }
+
+            renderAll();
+            setSyncState('ok');
+
+            if (manual) {
+                toast('Данные загружены', { type: 'success', text: 'Панель показывает состояние из репозитория.' });
+            }
+        });
+    }
+
+    const syncSaveBtn = document.querySelector('[data-sync-save]');
+    if (syncSaveBtn) {
+        syncSaveBtn.addEventListener('click', function () {
+            if (!window.SBSync) return;
+
+            const value = function (selector) {
+                const el = document.querySelector(selector);
+                return el ? el.value.trim() : '';
+            };
+
+            SBSync.saveConfig({
+                owner: value('[data-sync-owner]'),
+                repo: value('[data-sync-repo]'),
+                branch: value('[data-sync-branch]') || 'main',
+                path: value('[data-sync-path]') || 'data/store.json',
+                token: value('[data-sync-token]'),
+                enabled: Boolean(document.querySelector('[data-sync-enabled]') && document.querySelector('[data-sync-enabled]').checked)
+            });
+
+            renderSyncForm();
+
+            const state = SBSync.status().state;
+            toast(state === 'sync' ? 'Синхронизация включена' : 'Настройки сохранены', {
+                type: state === 'sync' ? 'success' : 'info',
+                text: state === 'sync'
+                    ? 'Изменения будут уходить в репозиторий.'
+                    : 'Для записи нужен токен и включённый переключатель.'
+            });
+        });
+    }
+
+    const syncPullBtn = document.querySelector('[data-sync-pull]');
+    if (syncPullBtn) syncPullBtn.addEventListener('click', function () { hydrateFromShared(true); });
+
+    const syncPushBtn = document.querySelector('[data-sync-push]');
+    if (syncPushBtn) syncPushBtn.addEventListener('click', function () { pushNow(true); });
+
     /* ---------- Запуск ---------- */
     function renderAll() {
         renderOverview();
@@ -604,6 +784,7 @@
 
     if (session) {
         showPanel();
+        hydrateFromShared(false);
     } else {
         showLogin();
         if (passInput) passInput.focus();

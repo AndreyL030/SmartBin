@@ -73,6 +73,7 @@
             <button type="button" data-view="orders">🧾 Заказы</button>
             <button type="button" data-view="products">📦 Товары</button>
             <button type="button" data-view="bins">🗑️ Урны</button>
+            <button type="button" data-view="sync">🔄 Синхронизация</button>
         </nav>
 
         <div class="admin-sidebar__foot">
@@ -214,11 +215,68 @@
             <div class="bin-grid" data-bins></div>
             <p class="admin-hint">Заполнение приходит с датчиков VL53L1X по каждому отсеку. Сейчас данные симулируются: каждые 8 секунд случайный отсек подрастает на 1–4%.</p>
         </section>
+        <!-- ---------- Синхронизация ---------- -->
+        <section data-panel="sync" hidden>
+            <div class="table-wrap">
+                <div class="table-wrap__head">
+                    <h2>Общие данные для всех устройств</h2>
+                    <span class="pill pill--new" data-sync-state>не настроено</span>
+                </div>
+                <div style="padding:20px">
+                    <p class="admin-hint" style="margin:0 0 18px">
+                        Панель хранит данные в файле <code>data/store.json</code> этого репозитория. Чтение открытое — витрина
+                        подхватывает цены сама на любом устройстве. Для записи нужен fine-grained токен с правом
+                        <b>Contents: Read and write</b> на этот репозиторий.
+                    </p>
+
+                    <div class="form-grid">
+                        <div class="field">
+                            <label for="syncOwner">Владелец</label>
+                            <input class="input" id="syncOwner" data-sync-owner placeholder="AndreyL030">
+                        </div>
+                        <div class="field">
+                            <label for="syncRepo">Репозиторий</label>
+                            <input class="input" id="syncRepo" data-sync-repo placeholder="SmartBin">
+                        </div>
+                        <div class="field">
+                            <label for="syncBranch">Ветка</label>
+                            <input class="input" id="syncBranch" data-sync-branch placeholder="main">
+                        </div>
+                        <div class="field">
+                            <label for="syncPath">Путь к файлу</label>
+                            <input class="input" id="syncPath" data-sync-path placeholder="data/store.json">
+                        </div>
+                        <div class="field field--full">
+                            <label for="syncToken">Токен доступа</label>
+                            <input class="input" id="syncToken" type="password" data-sync-token placeholder="github_pat_…" autocomplete="off">
+                            <span class="hint">Хранится только в этом браузере. Создайте fine-grained токен на один репозиторий со сроком 30 дней.</span>
+                        </div>
+                    </div>
+
+                    <label class="checkbox-row">
+                        <input type="checkbox" data-sync-enabled>
+                        <span>Включить запись в репозиторий. Без этого панель работает только на этом устройстве.</span>
+                    </label>
+
+                    <div class="admin-actions">
+                        <button class="btn btn--sm btn--grad" type="button" data-sync-save>Сохранить</button>
+                        <button class="btn btn--sm btn--outline" type="button" data-sync-pull>Загрузить с GitHub</button>
+                        <button class="btn btn--sm btn--outline" type="button" data-sync-push>Отправить сейчас</button>
+                    </div>
+
+                    <p class="admin-hint">
+                        «Загрузить» перезапишет локальные данные содержимым файла. В публичном репозитории заказы видны
+                        всем — не вводите реальные телефоны и адреса.
+                    </p>
+                </div>
+            </div>
+        </section>
     </main>
 </div>
 
 <div class="toast-stack" role="status" aria-live="polite" aria-atomic="false"></div>
 
+<script src="assets/js/sync.js"></script>
 <script src="assets/js/app.js"></script>
 <script src="assets/js/admin.js"></script>
 </body>
