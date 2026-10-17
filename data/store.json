@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-17T22:02:01.210Z",
+  "updatedAt": "2026-10-17T22:02:07.049Z",
   "products": {
     "eco": {
       "price": 249900
@@ -9,6 +9,9 @@
       "inStock": false
     },
     "wifi": {
+      "inStock": false
+    },
+    "bags": {
       "inStock": false
     }
   },
@@ -22,7 +25,7 @@
       "levels": {
         "plastic": 72,
         "glass": 38,
-        "paper": 88,
+        "paper": 91,
         "organic": 21
       }
     },
