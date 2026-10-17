@@ -1,7 +1,49 @@
 {
-  "updatedAt": "2026-10-17T00:00:00.000Z",
-  "products": {},
+  "updatedAt": "2026-10-17T21:30:47.042Z",
+  "products": {
+    "eco": {
+      "price": 249900
+    },
+    "pro": {
+      "price": 499900,
+      "inStock": false
+    }
+  },
   "orders": [],
   "orderStatuses": {},
-  "bins": []
+  "bins": [
+    {
+      "id": "bin-1",
+      "model": "SmartBin Eco",
+      "place": "Офис, 3 этаж",
+      "levels": {
+        "plastic": 74,
+        "glass": 34,
+        "paper": 96,
+        "organic": 25
+      }
+    },
+    {
+      "id": "bin-2",
+      "model": "SmartBin Pro",
+      "place": "Переговорная «Волга»",
+      "levels": {
+        "plastic": 50,
+        "glass": 62,
+        "paper": 30,
+        "organic": 55
+      }
+    },
+    {
+      "id": "bin-3",
+      "model": "SmartBin Eco",
+      "place": "Кухня, 2 этаж",
+      "levels": {
+        "plastic": 91,
+        "glass": 18,
+        "paper": 24,
+        "organic": 84
+      }
+    }
+  ]
 }
