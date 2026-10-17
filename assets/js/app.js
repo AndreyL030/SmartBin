@@ -467,19 +467,25 @@
     }
 
     function productCardHtml(product) {
+        const outOfStock = !product.inStock;
+
         return '' +
-            '<article class="product-card">' +
+            '<article class="product-card' + (outOfStock ? ' is-out' : '') + '">' +
                 badgeHtml(product) +
                 '<div class="product-icon" aria-hidden="true">' + product.icon + '</div>' +
                 '<h3><a href="product.html?id=' + encodeURIComponent(product.id) + '">' + escapeHtml(product.name) + '</a></h3>' +
                 '<p class="card-desc">' + escapeHtml(product.short) + '</p>' +
                 '<div class="card-meta">' +
                     '<div class="price">' + formatPrice(product.price) + '</div>' +
-                    '<span class="stock">' + (product.inStock ? 'В наличии' : 'Под заказ') + '</span>' +
+                    '<span class="stock' + (outOfStock ? ' stock--out' : '') + '">' +
+                        (outOfStock ? 'Нет в наличии' : 'В наличии') +
+                    '</span>' +
                 '</div>' +
                 '<div class="card-actions">' +
                     '<a class="btn btn--sm btn--outline" href="product.html?id=' + encodeURIComponent(product.id) + '">Подробнее</a>' +
-                    '<button class="btn btn--sm" type="button" data-add="' + product.id + '">В корзину</button>' +
+                    '<button class="btn btn--sm" type="button" data-add="' + product.id + '"' +
+                        (outOfStock ? ' disabled aria-disabled="true" title="Товара нет в наличии"' : '') +
+                    '>В корзину</button>' +
                 '</div>' +
             '</article>';
     }
@@ -489,6 +495,16 @@
             const trigger = event.target.closest('[data-add]');
             if (!trigger) return;
             const id = trigger.getAttribute('data-add');
+            const found = getProduct(id);
+
+            if (found && !found.inStock) {
+                toast('Нет в наличии', {
+                    type: 'warning',
+                    text: found.name + ' — сейчас недоступен, мы сообщим о поступлении.'
+                });
+                return;
+            }
+
             const product = cart.add(id, 1);
             if (!product) return;
 
@@ -506,10 +522,15 @@
         const featured = document.querySelector('[data-featured]');
         if (featured) {
             const ids = ['eco', 'pro', 'wifi'];
-            featured.innerHTML = ids.map(function (id) {
-                const product = getProduct(id);
-                return product ? productCardHtml(product) : '';
-            }).join('');
+            const featuredProducts = ids.map(getProduct).filter(Boolean);
+
+            // Сначала то, что можно купить сейчас.
+            featuredProducts.sort(function (a, b) {
+                if (a.inStock === b.inStock) return 0;
+                return a.inStock ? -1 : 1;
+            });
+
+            featured.innerHTML = featuredProducts.map(productCardHtml).join('');
         }
 
         const overlay = document.getElementById('surveyOverlay');
@@ -622,6 +643,12 @@
                 });
             }
 
+            // Товары не в наличии — в конце списка, независимо от сортировки.
+            list.sort(function (a, b) {
+                if (a.inStock === b.inStock) return 0;
+                return a.inStock ? -1 : 1;
+            });
+
             grid.innerHTML = list.length
                 ? list.map(productCardHtml).join('')
                 : '<div class="empty-state" style="grid-column:1/-1">' +
@@ -713,7 +740,9 @@
                 '<p class="lead">' + escapeHtml(product.description) + '</p>' +
                 '<div class="product-price-row">' +
                     '<div class="price">' + formatPrice(product.price) + '</div>' +
-                    '<span class="stock">' + (product.inStock ? 'В наличии на складе' : 'Под заказ') + '</span>' +
+                    '<span class="stock' + (product.inStock ? '' : ' stock--out') + '">' +
+                        (product.inStock ? 'В наличии на складе' : 'Нет в наличии') +
+                    '</span>' +
                 '</div>' +
                 '<ul class="features">' + features + '</ul>' +
                 '<div class="product-price-row" style="gap:14px;flex-wrap:wrap">' +
@@ -722,7 +751,10 @@
                         '<input type="number" value="1" min="1" max="99" step="1" inputmode="numeric" aria-label="Количество" data-qty-input>' +
                         '<button type="button" data-qty-plus aria-label="Увеличить количество">+</button>' +
                     '</div>' +
-                    '<button class="btn btn--grad" type="button" data-product-add>Добавить в корзину</button>' +
+                    '<button class="btn btn--grad" type="button" data-product-add' +
+                        (product.inStock ? '' : ' disabled aria-disabled="true"') + '>' +
+                        (product.inStock ? 'Добавить в корзину' : 'Нет в наличии') +
+                    '</button>' +
                     '<a class="btn btn--outline" href="cart.html">Перейти в корзину</a>' +
                 '</div>' +
                 '<div class="note-box"><span aria-hidden="true">🚚</span><div>Бесплатная доставка от ' +
@@ -757,6 +789,11 @@
         });
 
         addBtn.addEventListener('click', function () {
+            if (!product.inStock) {
+                toast('Нет в наличии', { type: 'warning', text: product.name + ' — сейчас недоступен.' });
+                return;
+            }
+
             const amount = clampQty(input.value);
             cart.add(product.id, amount);
             toast(product.name + ' — в корзине', {
@@ -1178,6 +1215,13 @@
 
     function boot() {
         if (!window.SBSync) {
+            startApp();
+            return;
+        }
+
+        const cfg = SBSync.readConfig();
+        if (!cfg.owner || !cfg.repo) {
+            // Общий файл не настроен — рисуем сразу, без ожидания сети.
             startApp();
             return;
         }

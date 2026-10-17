@@ -1410,3 +1410,10 @@ table.data td small { display: block; color: var(--text-muted); font-size: .78re
     .admin-sidebar__foot { flex-direction: row; margin-top: 4px; }
     .admin-main { padding: 20px 16px 48px; }
 }
+
+/* Товары не в наличии: приглушены и не добавляются в корзину */
+.product-card.is-out { opacity: .62; filter: grayscale(.55); }
+.product-card.is-out:hover { opacity: .88; }
+.product-card.is-out .price { color: var(--text-muted); }
+.product-card.is-out .product-icon { filter: grayscale(1); }
+.stock--out { color: var(--danger); }
