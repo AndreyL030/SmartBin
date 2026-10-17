@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-17T22:04:23.249Z",
+  "updatedAt": "2026-10-17T22:04:24.959Z",
   "products": {
     "eco": {
       "price": 249900
@@ -13,6 +13,9 @@
     },
     "wifi": {
       "inStock": true
+    },
+    "servo": {
+      "inStock": false
     }
   },
   "orders": [],
