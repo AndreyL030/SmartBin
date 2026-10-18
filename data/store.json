@@ -1,18 +1,18 @@
 {
-  "updatedAt": "2026-10-18T12:38:25.897Z",
+  "updatedAt": "2026-10-18T12:38:28.976Z",
   "products": {
     "eco": {
       "price": 24990
     },
     "pro": {
       "price": 49990,
-      "inStock": false
+      "inStock": true
     },
     "bags": {
-      "inStock": false
+      "inStock": true
     },
     "wifi": {
-      "inStock": false
+      "inStock": true
     }
   },
   "orders": [],
