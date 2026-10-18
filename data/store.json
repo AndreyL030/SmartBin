@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-18T12:26:26.587Z",
+  "updatedAt": "2026-10-18T12:26:35.587Z",
   "products": {
     "eco": {
       "price": 249900
@@ -24,9 +24,9 @@
       "place": "Офис, 3 этаж",
       "levels": {
         "plastic": 100,
-        "glass": 57,
+        "glass": 100,
         "paper": 100,
-        "organic": 86
+        "organic": 100
       }
     },
     {
@@ -34,9 +34,9 @@
       "model": "SmartBin Pro",
       "place": "Переговорная «Волга»",
       "levels": {
-        "plastic": 81,
+        "plastic": 100,
         "glass": 100,
-        "paper": 88,
+        "paper": 100,
         "organic": 100
       }
     },
@@ -46,8 +46,8 @@
       "place": "Кухня, 2 этаж",
       "levels": {
         "plastic": 100,
-        "glass": 78,
-        "paper": 48,
+        "glass": 100,
+        "paper": 100,
         "organic": 100
       }
     }
