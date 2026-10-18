@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-18T13:08:11.961Z",
+  "updatedAt": "2026-10-18T13:08:19.958Z",
   "products": {
     "eco": {
       "price": 24990
@@ -24,7 +24,7 @@
       "place": "Офис, 3 этаж",
       "levels": {
         "plastic": 81,
-        "glass": 41,
+        "glass": 45,
         "paper": 97,
         "organic": 33
       }
