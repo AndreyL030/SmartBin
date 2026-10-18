@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-18T13:09:55.957Z",
+  "updatedAt": "2026-10-18T13:10:11.962Z",
   "products": {
     "eco": {
       "price": 24990
@@ -48,7 +48,7 @@
         "plastic": 95,
         "glass": 22,
         "paper": 39,
-        "organic": 90
+        "organic": 93
       }
     }
   ]
