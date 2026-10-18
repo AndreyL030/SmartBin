@@ -1417,3 +1417,15 @@ table.data td small { display: block; color: var(--text-muted); font-size: .78re
 .product-card.is-out .price { color: var(--text-muted); }
 .product-card.is-out .product-icon { filter: grayscale(1); }
 .stock--out { color: var(--danger); }
+/* Чат поддержки: поле контакта и карточки обращений в админке */
+.chat__contact { padding: 0 14px 10px; background: var(--surface); }
+.chat__contact .input { font-size: .86rem; padding: 9px 12px; }
+
+.chat-item { padding: 16px 20px; border-bottom: 1px solid #eef2f7; }
+.chat-item:last-child { border-bottom: none; }
+.chat-item__head { display: flex; justify-content: space-between; gap: 10px; font-size: .8rem; color: var(--text-muted); margin-bottom: 6px; }
+.chat-item__head b { color: var(--text-dark); font-size: .92rem; }
+.chat-item__text { font-size: .92rem; line-height: 1.5; margin-bottom: 10px; white-space: pre-wrap; }
+.chat-reply { background: rgba(16, 185, 129, .08); border-left: 3px solid var(--accent); padding: 9px 12px; border-radius: 8px; font-size: .87rem; }
+.chat-reply-form { display: flex; gap: 8px; align-items: center; }
+.chat-reply-form .input { flex: 1; }

@@ -74,6 +74,7 @@
             <button type="button" data-view="products">📦 Товары</button>
             <button type="button" data-view="bins">🗑️ Урны</button>
             <button type="button" data-view="sync">🔄 Синхронизация</button>
+            <button type="button" data-view="chat">💬 Обращения <span class="pill pill--danger" data-chat-badge hidden>0</span></button>
         </nav>
 
         <div class="admin-sidebar__foot">
@@ -271,6 +272,24 @@
                 </div>
             </div>
         </section>
+        <!-- ---------- Обращения ---------- -->
+        <section data-panel="chat" hidden>
+            <div class="table-wrap">
+                <div class="table-wrap__head">
+                    <h2>Обращения из чата</h2>
+                    <div class="admin-actions">
+                        <span class="pill pill--new" data-chat-state>проверяю…</span>
+                        <button class="btn btn--sm btn--outline" type="button" data-chat-refresh>Обновить</button>
+                    </div>
+                </div>
+                <div data-chat-list></div>
+                <div class="admin-empty" data-chat-empty hidden></div>
+            </div>
+            <p class="admin-hint">
+                Сообщения приходят с сайта на любом устройстве. Ответ появляется в чате у посетителя в течение 8 секунд,
+                если страница открыта. Если канал не настроен — инструкция появится выше.
+            </p>
+        </section>
     </main>
 </div>
 
@@ -278,7 +297,9 @@
 
 <script src="assets/js/sync.js"></script>
 <script src="assets/js/sync-fresh.js"></script>
+<script src="assets/js/chat.js"></script>
 <script src="assets/js/app.js"></script>
 <script src="assets/js/admin.js"></script>
+<script src="assets/js/admin-chat.js"></script>
 </body>
 </html>

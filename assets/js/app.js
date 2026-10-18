@@ -1117,6 +1117,9 @@
 
         const form = document.querySelector('[data-chat-form]');
         const input = document.querySelector('[data-chat-input]');
+        const contactInput = document.querySelector('[data-chat-contact]');
+        let liveMode = false;
+        const seenReplies = {};
         const answers = [
             {
                 keys: ['достав', 'курьер', 'привез', 'срок'],
@@ -1176,6 +1179,27 @@
             input.value = '';
             input.focus();
 
+            if (liveMode && window.SBChat) {
+                const dots = document.createElement('div');
+                dots.className = 'message bot typing';
+                dots.innerHTML = '<span></span><span></span><span></span>';
+                chatBody.appendChild(dots);
+                scrollDown();
+
+                SBChat.send({
+                    text: value,
+                    contact: contactInput ? contactInput.value.trim() : ''
+                }).then(function (result) {
+                    if (dots.parentNode) dots.parentNode.removeChild(dots);
+                    if (result && result.ok === false) throw new Error('rejected');
+                    addMessage('Передал оператору. Ответ появится здесь же — страницу можно не закрывать.', 'bot');
+                }).catch(function () {
+                    if (dots.parentNode) dots.parentNode.removeChild(dots);
+                    addMessage('Не удалось отправить сообщение. Проверьте связь и попробуйте ещё раз.', 'bot');
+                });
+                return;
+            }
+
             const lower = value.toLowerCase();
             const matched = answers.find(function (item) {
                 return item.keys.some(function (key) { return lower.indexOf(key) !== -1; });
@@ -1184,6 +1208,39 @@
             reply(matched
                 ? matched.text
                 : 'Спасибо за сообщение! Передал вопрос специалисту — ответим здесь или по телефону 8 800 350-12-45 в течение 5 минут.');
+        }
+
+        function pollReplies() {
+            if (!liveMode || !window.SBChat) return;
+
+            SBChat.list().then(function (data) {
+                if (!data || !data.ok || !Array.isArray(data.messages)) return;
+                const mine = SBChat.deviceId();
+
+                data.messages.forEach(function (message) {
+                    if (message.device !== mine) return;
+                    if (!message.reply) return;
+
+                    const key = message.id + '|' + message.replyTs;
+                    if (seenReplies[key]) return;
+                    seenReplies[key] = true;
+                    addMessage(message.reply, 'bot');
+                });
+            }).catch(function () { /* тихо: попробуем на следующем тике */ });
+        }
+
+        if (window.SBChat) {
+            SBChat.isConfigured().then(function (configured) {
+                liveMode = configured;
+                if (!configured) return;
+
+                const greeting = chatBody.querySelector('.message.bot');
+                if (greeting) {
+                    greeting.textContent = 'Здравствуйте! Напишите вопрос — он уйдёт оператору, а ответ появится здесь же.';
+                }
+                window.setInterval(pollReplies, 8000);
+                pollReplies();
+            });
         }
 
         if (form) form.addEventListener('submit', handleSubmit);
