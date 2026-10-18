@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-18T13:53:20.989Z",
+  "updatedAt": "2026-10-18T13:53:26.525Z",
   "products": {
     "eco": {
       "price": 24990
@@ -9,7 +9,7 @@
       "inStock": true
     },
     "bags": {
-      "inStock": true
+      "inStock": false
     },
     "wifi": {
       "inStock": true
@@ -46,7 +46,7 @@
       "place": "Кухня, 2 этаж",
       "levels": {
         "plastic": 100,
-        "glass": 31,
+        "glass": 32,
         "paper": 35,
         "organic": 98
       }
