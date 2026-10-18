@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-18T12:54:22.721Z",
+  "updatedAt": "2026-10-18T12:54:46.735Z",
   "products": {
     "eco": {
       "price": 24990
@@ -35,7 +35,7 @@
       "place": "Переговорная «Волга»",
       "levels": {
         "plastic": 46,
-        "glass": 62,
+        "glass": 64,
         "paper": 35,
         "organic": 55
       }
