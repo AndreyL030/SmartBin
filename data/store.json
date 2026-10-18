@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-18T13:23:18.405Z",
+  "updatedAt": "2026-10-18T13:23:21.554Z",
   "products": {
     "eco": {
       "price": 24990
@@ -15,7 +15,89 @@
       "inStock": true
     }
   },
-  "orders": [],
+  "orders": [
+    {
+      "number": "SB-998827",
+      "createdAt": "2026-10-09T13:23:20.651Z",
+      "items": [
+        {
+          "name": "Сервопривод лотка",
+          "qty": 1,
+          "price": 2490
+        },
+        {
+          "name": "Датчик заполненности",
+          "qty": 1,
+          "price": 1490
+        }
+      ],
+      "subtotal": 3980,
+      "delivery": 590,
+      "total": 4570,
+      "customer": {
+        "name": "Игорь Лебедев",
+        "phone": "+7 921 555-09-14",
+        "email": "",
+        "city": "Санкт-Петербург",
+        "address": "Невский пр., 44"
+      },
+      "deliveryKind": "courier"
+    },
+    {
+      "number": "SB-445706",
+      "createdAt": "2026-10-14T13:23:20.651Z",
+      "items": [
+        {
+          "name": "SmartBin Pro",
+          "qty": 2,
+          "price": 49990
+        },
+        {
+          "name": "Wi-Fi / Bluetooth модуль",
+          "qty": 2,
+          "price": 1990
+        }
+      ],
+      "subtotal": 103960,
+      "delivery": 0,
+      "total": 103960,
+      "customer": {
+        "name": "ООО «Чистый офис»",
+        "phone": "+7 495 120-33-11",
+        "email": "",
+        "city": "Москва",
+        "address": "ул. Пресненская, 12"
+      },
+      "deliveryKind": "courier"
+    },
+    {
+      "number": "SB-991774",
+      "createdAt": "2026-10-17T13:23:20.651Z",
+      "items": [
+        {
+          "name": "SmartBin Eco",
+          "qty": 1,
+          "price": 24990
+        },
+        {
+          "name": "Комплект мешков (50 шт)",
+          "qty": 2,
+          "price": 890
+        }
+      ],
+      "subtotal": 26770,
+      "delivery": 590,
+      "total": 27360,
+      "customer": {
+        "name": "Анна Смирнова",
+        "phone": "+7 900 112-45-67",
+        "email": "",
+        "city": "Москва",
+        "address": "ул. Пресненская, 12"
+      },
+      "deliveryKind": "courier"
+    }
+  ],
   "orderStatuses": {},
   "bins": [
     {
