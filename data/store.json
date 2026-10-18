@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-18T12:38:28.976Z",
+  "updatedAt": "2026-10-18T12:53:56.277Z",
   "products": {
     "eco": {
       "price": 24990
@@ -34,7 +34,7 @@
       "model": "SmartBin Pro",
       "place": "Переговорная «Волга»",
       "levels": {
-        "plastic": 45,
+        "plastic": 46,
         "glass": 62,
         "paper": 35,
         "organic": 55
