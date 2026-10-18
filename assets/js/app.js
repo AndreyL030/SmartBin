@@ -1045,6 +1045,11 @@
                 };
 
                 saveOrder(order);
+
+                const delivery = window.SBChat
+                    ? SBChat.sendOrder(order).catch(function () { return null; })
+                    : Promise.resolve(null);
+
                 cart.clear();
 
                 if (layout) layout.hidden = true;
@@ -1072,10 +1077,14 @@
                     successEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }
 
-                toast('Заказ ' + order.number + ' оформлен', {
-                    type: 'success',
-                    text: 'Сумма ' + formatPrice(order.total) + '. Детали отправлены менеджеру.',
-                    duration: 6000
+                delivery.then(function (sent) {
+                    const delivered = sent && sent.ok !== false;
+                    toast('Заказ ' + order.number + ' оформлен', {
+                        type: 'success',
+                        text: 'Сумма ' + formatPrice(order.total) +
+                            (delivered ? '. Заказ отправлен в панель.' : '. Сохранён на этом устройстве.'),
+                        duration: 6000
+                    });
                 });
 
                 renderOrders();

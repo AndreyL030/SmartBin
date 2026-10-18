@@ -71,6 +71,7 @@
         <nav class="admin-nav" aria-label="Разделы админки">
             <button type="button" data-view="overview" aria-current="true">📊 Обзор</button>
             <button type="button" data-view="orders">🧾 Заказы</button>
+            <button type="button" data-view="ordersRemote">🌐 Заказы с сайта <span class="pill pill--danger" data-orders-remote-badge hidden>0</span></button>
             <button type="button" data-view="products">📦 Товары</button>
             <button type="button" data-view="bins">🗑️ Урны</button>
             <button type="button" data-view="sync">🔄 Синхронизация</button>
@@ -290,6 +291,30 @@
                 если страница открыта. Если канал не настроен — инструкция появится выше.
             </p>
         </section>
+        <!-- ---------- Заказы с сайта ---------- -->
+        <section data-panel="ordersRemote" hidden>
+            <div class="table-wrap">
+                <div class="table-wrap__head">
+                    <h2>Заказы с сайта</h2>
+                    <div class="admin-actions">
+                        <span class="pill pill--new" data-orders-remote-state>проверяю…</span>
+                        <button class="btn btn--sm btn--outline" type="button" data-orders-remote-refresh>Обновить</button>
+                    </div>
+                </div>
+                <div class="table-scroll" data-orders-remote-table>
+                    <table class="data">
+                        <thead>
+                            <tr><th>Заказ</th><th>Дата</th><th>Клиент</th><th>Товары</th><th>Сумма</th><th>Статус</th></tr>
+                        </thead>
+                        <tbody data-orders-remote-body></tbody>
+                    </table>
+                </div>
+                <div class="admin-empty" data-orders-remote-empty hidden></div>
+            </div>
+            <p class="admin-hint">
+                Заказы приходят с любого устройства, где оформлен заказ. Статус меняется здесь и сохраняется на сервере.
+            </p>
+        </section>
     </main>
 </div>
 
@@ -301,5 +326,6 @@
 <script src="assets/js/app.js"></script>
 <script src="assets/js/admin.js"></script>
 <script src="assets/js/admin-chat.js"></script>
+<script src="assets/js/admin-orders.js"></script>
 </body>
 </html>

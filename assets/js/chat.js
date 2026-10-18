@@ -76,12 +76,61 @@
         });
     }
 
+    function orderSummary(order) {
+        const customer = order.customer || {};
+        const items = Array.isArray(order.items) ? order.items : [];
+        const lines = items.map(function (item) {
+            return '• ' + item.name + ' × ' + item.qty + ' — ' + (item.price * item.qty) + ' ₽';
+        });
+
+        return [
+            'Заказ ' + order.number + ' на ' + order.total + ' ₽',
+            lines.join('\n'),
+            customer.name + ', ' + customer.phone,
+            (customer.city || '') + (customer.address ? ', ' + customer.address : '')
+        ].join('\n');
+    }
+
+    function sendOrder(order) {
+        return post({ action: 'order', order: order }).then(function (result) {
+            if (result && result.ok !== false) return result;
+
+            // Старая версия скрипта не знает про заказы — отправляем сообщением.
+            return post({
+                action: 'send',
+                message: {
+                    device: deviceId(),
+                    ts: new Date().toISOString(),
+                    name: 'Заказ ' + order.number,
+                    contact: (order.customer && order.customer.phone) || '',
+                    text: orderSummary(order)
+                }
+            });
+        });
+    }
+
+    function listOrders() {
+        return loadConfig().then(function (cfg) {
+            if (!cfg.inbox) return null;
+            return fetch(cfg.inbox + '?action=orders&t=' + Date.now(), { cache: 'no-store' })
+                .then(function (response) { return response.ok ? response.json() : null; })
+                .catch(function () { return null; });
+        });
+    }
+
+    function setOrderStatus(id, status) {
+        return post({ action: 'orderStatus', id: id, status: status, ts: new Date().toISOString() });
+    }
+
     window.SBChat = {
         loadConfig: loadConfig,
         isConfigured: isConfigured,
         send: send,
         reply: reply,
         list: list,
+        sendOrder: sendOrder,
+        listOrders: listOrders,
+        setOrderStatus: setOrderStatus,
         deviceId: deviceId
     };
 })();
