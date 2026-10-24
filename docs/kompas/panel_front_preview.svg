@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="1150" viewBox="0 0 900 1150" font-family="Inter, 'Segoe UI', Arial, sans-serif">
+    <defs>
+        <marker id="a" markerWidth="9" markerHeight="9" refX="4.5" refY="4.5" orient="auto">
+            <path d="M0 0 L9 4.5 L0 9 z" fill="#94a3b8"/>
+        </marker>
+        <style>
+            .dim { stroke: #94a3b8; stroke-width: 1.2; }
+            .dimText { fill: #475569; font-size: 14px; font-weight: 600; }
+            .lbl { fill: #64748b; font-size: 13px; }
+            .h { fill: #0f172a; font-size: 22px; font-weight: 800; }
+            .panel { fill: #f8fafc; stroke: #94a3b8; stroke-width: 2; }
+            .opening { fill: #ffffff; stroke: #2563eb; stroke-width: 1.8; }
+            .glass { fill: rgba(219, 234, 254, .55); stroke: #2563eb; stroke-width: 1.4; }
+            .axis { stroke: #cbd5e1; stroke-width: 1; stroke-dasharray: 12 4 3 4; }
+            .num { fill: #ef4444; }
+            .numText { fill: #fff; font-size: 12px; font-weight: 700; }
+        </style>
+    </defs>
+
+    <rect width="900" height="1150" fill="#ffffff"/>
+
+    <text x="60" y="56" class="h">Передняя панель — превью</text>
+    <text x="60" y="84" class="lbl">450 × 900 × 5 мм · окно загрузки и проём двери</text>
+
+    <!-- размеры -->
+    <line x1="120" y1="140" x2="480" y2="140" class="dim" marker-start="url(#a)" marker-end="url(#a)"/>
+    <text x="300" y="132" text-anchor="middle" class="dimText">450</text>
+    <line x1="88" y1="180" x2="88" y2="900" class="dim" marker-start="url(#a)" marker-end="url(#a)"/>
+    <text x="80" y="540" text-anchor="middle" class="dimText" transform="rotate(-90 80 540)">900</text>
+
+    <!-- панель -->
+    <rect x="120" y="180" width="360" height="720" class="panel"/>
+
+    <!-- ось симметрии: 225 мм от края -->
+    <line x1="300" y1="150" x2="300" y2="920" class="axis"/>
+
+    <!-- окно 280×110, по центру панели -->
+    <rect x="188" y="216" width="224" height="88" rx="10" class="glass"/>
+    <text x="300" y="265" text-anchor="middle" fill="#1d4ed8" font-size="12">окно 280 × 110</text>
+
+    <!-- дверь 400×390, по центру панели -->
+    <rect x="140" y="428" width="320" height="312" rx="6.4" class="opening"/>
+    <text x="300" y="590" text-anchor="middle" class="lbl" font-size="12">дверь 400 × 390</text>
+
+    <!-- петли Ø5 на левой кромке -->
+    <circle cx="130" cy="460" r="2" class="opening"/>
+    <circle cx="130" cy="584" r="2" class="opening"/>
+    <circle cx="130" cy="708" r="2" class="opening"/>
+
+    <!-- замок Ø20 -->
+    <circle cx="452" cy="584" r="8" class="opening"/>
+
+    <!-- размеры по высоте -->
+    <line x1="500" y1="216" x2="500" y2="304" class="dim" marker-start="url(#a)" marker-end="url(#a)"/>
+    <text x="512" y="264" class="dimText" font-size="12">110</text>
+    <text x="512" y="284" class="lbl" font-size="11.5">центр 800 от низа</text>
+
+    <line x1="500" y1="428" x2="500" y2="740" class="dim" marker-start="url(#a)" marker-end="url(#a)"/>
+    <text x="512" y="590" class="dimText" font-size="12">390</text>
+
+    <!-- зазор сверху до окна -->
+    <line x1="528" y1="180" x2="528" y2="216" class="dim" marker-start="url(#a)" marker-end="url(#a)"/>
+    <text x="540" y="198" class="lbl" font-size="11">45</text>
+
+    <!-- номера -->
+    <g>
+        <circle cx="300" cy="194" r="11" class="num"/><text x="300" y="198.5" text-anchor="middle" class="numText">1</text>
+        <circle cx="300" cy="772" r="11" class="num"/><text x="300" y="776.5" text-anchor="middle" class="numText">2</text>
+        <circle cx="112" cy="460" r="11" class="num"/><text x="112" y="464.5" text-anchor="middle" class="numText">3</text>
+        <circle cx="452" cy="628" r="11" class="num"/><text x="452" y="632.5" text-anchor="middle" class="numText">4</text>
+    </g>
+
+    <text x="60" y="960" class="h" font-size="17">Что на панели</text>
+    <g class="lbl" font-size="13.5">
+        <text x="60" y="994">1 — окно загрузки 280 × 110, центр на высоте 800 мм от низа, по центру панели</text>
+        <text x="60" y="1022">2 — проём двери 400 × 390, от 200 до 590 мм от низа, скругления R8</text>
+        <text x="60" y="1050">3 — петли Ø5, 3 шт на левой кромке</text>
+        <text x="60" y="1078">4 — отверстие замка Ø20 на правой кромке</text>
+    </g>
+
+    <line x1="60" y1="1100" x2="840" y2="1100" stroke="#e2e8f0"/>
+    <text x="60" y="1126" class="lbl" font-size="12">Чертёж в масштабе: 1 мм = 0.8 px. Ось симметрии — штрихпунктир по центру панели.</text>
+</svg>
