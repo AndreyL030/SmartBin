@@ -644,6 +644,60 @@ ul { list-style: none; }
     margin-top: 22px;
 }
 
+/* ---------- Дополнительные секции товара ---------- */
+.product-extra-sections {
+    margin-top: 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+}
+
+.product-section {
+    padding: 22px 24px;
+    border-radius: var(--radius);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+}
+
+.product-section h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    letter-spacing: -.02em;
+}
+
+.section-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.section-list li {
+    position: relative;
+    padding-left: 22px;
+    font-size: .93rem;
+    line-height: 1.55;
+    color: var(--text-dark);
+}
+
+.section-list li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 8px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--grad-brand);
+}
+
 /* ---------- 10. Корзина ---------- */
 .cart-layout { display: grid; grid-template-columns: 1.55fr .95fr; gap: 26px; align-items: start; padding-top: 26px; }
 
