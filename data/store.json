@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-24T13:50:57.672Z",
+  "updatedAt": "2026-10-24T13:51:03.012Z",
   "products": {
     "eco": {
       "price": 24990
@@ -46,7 +46,7 @@
       "place": "Кухня, 2 этаж",
       "levels": {
         "plastic": 100,
-        "glass": 38,
+        "glass": 42,
         "paper": 35,
         "organic": 100
       }
