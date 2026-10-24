@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-24T13:47:17.836Z",
+  "updatedAt": "2026-10-24T13:47:22.246Z",
   "products": {
     "eco": {
       "price": 24990
@@ -53,7 +53,131 @@
     }
   ],
   "archive": {
-    "orders": [],
+    "orders": [
+      {
+        "uid": "ord-mvmgdwu1-vh3bys",
+        "source": "remote",
+        "ref": "o1792329746006171",
+        "number": "SB-745749",
+        "customer": "Лепетунов Андрей",
+        "phone": "79153226712",
+        "items": [
+          {
+            "name": "SmartBin Pro",
+            "qty": 1,
+            "price": 49990
+          }
+        ],
+        "total": 50580,
+        "status": "done",
+        "createdAt": "2026-10-18T13:22:25.749Z",
+        "note": "",
+        "payload": {
+          "id": "o1792329746006171",
+          "ts": "2026-10-18T13:22:25.749Z",
+          "number": "SB-745749",
+          "name": "Лепетунов Андрей",
+          "phone": "79153226712",
+          "email": "andreilepetunov03@gmail.com",
+          "city": "Москва",
+          "address": "Ул. Зеленая 19",
+          "deliveryKind": "courier",
+          "delivery": 590,
+          "items": [
+            {
+              "name": "SmartBin Pro",
+              "qty": 1,
+              "price": 49990
+            }
+          ],
+          "total": 50580,
+          "status": "done"
+        },
+        "archivedAt": "2026-10-24T13:47:21.337Z"
+      },
+      {
+        "uid": "ord-mvmgduut-afts76",
+        "source": "remote",
+        "ref": "o1792331605896732",
+        "number": "SB-606594",
+        "customer": "Лепетунов Андрей",
+        "phone": "79153226712",
+        "items": [
+          {
+            "name": "Комплект мешков (50 шт)",
+            "qty": 32,
+            "price": 890
+          }
+        ],
+        "total": 28480,
+        "status": "done",
+        "createdAt": "2026-10-18T13:53:26.594Z",
+        "note": "",
+        "payload": {
+          "id": "o1792331605896732",
+          "ts": "2026-10-18T13:53:26.594Z",
+          "number": "SB-606594",
+          "name": "Лепетунов Андрей",
+          "phone": "79153226712",
+          "email": "andreilepetunov03@gmail.com",
+          "city": "",
+          "address": "",
+          "deliveryKind": "pickup",
+          "delivery": 0,
+          "items": [
+            {
+              "name": "Комплект мешков (50 шт)",
+              "qty": 32,
+              "price": 890
+            }
+          ],
+          "total": 28480,
+          "status": "done"
+        },
+        "archivedAt": "2026-10-24T13:47:18.773Z"
+      },
+      {
+        "uid": "ord-mvmgduos-h4e1t3",
+        "source": "remote",
+        "ref": "o1792405585271123",
+        "number": "SB-582835",
+        "customer": "Андрей лепетунов",
+        "phone": "89153226721",
+        "items": [
+          {
+            "name": "Wi-Fi / Bluetooth модуль",
+            "qty": 1,
+            "price": 1990
+          }
+        ],
+        "total": 2580,
+        "status": "done",
+        "createdAt": "2026-10-19T10:26:22.835Z",
+        "note": "",
+        "payload": {
+          "id": "o1792405585271123",
+          "ts": "2026-10-19T10:26:22.835Z",
+          "number": "SB-582835",
+          "name": "Андрей лепетунов",
+          "phone": "89153226721",
+          "email": "andreylepetunov1030@gmail.com",
+          "city": "Москва",
+          "address": "Ул зеленая 19",
+          "deliveryKind": "courier",
+          "delivery": 590,
+          "items": [
+            {
+              "name": "Wi-Fi / Bluetooth модуль",
+              "qty": 1,
+              "price": 1990
+            }
+          ],
+          "total": 2580,
+          "status": "done"
+        },
+        "archivedAt": "2026-10-24T13:47:18.556Z"
+      }
+    ],
     "appeals": [
       {
         "uid": "msg-mvmgdpi6-151ku5",
@@ -200,6 +324,6 @@
         "archivedAt": "2026-10-24T13:47:06.931Z"
       }
     ],
-    "updatedAt": "2026-10-24T13:47:11.838Z"
+    "updatedAt": "2026-10-24T13:47:21.337Z"
   }
 }
