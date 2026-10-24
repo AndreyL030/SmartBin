@@ -601,6 +601,7 @@ ul { list-style: none; }
     background: radial-gradient(circle, rgba(37, 99, 235, .16), transparent 70%);
 }
 
+.product-info { width: 100%; }
 .product-info h1 { font-size: clamp(1.6rem, 3vw, 2.2rem); letter-spacing: -.03em; line-height: 1.15; margin: 10px 0 12px; }
 .product-info .lead { color: var(--text-muted); margin-bottom: 22px; }
 
