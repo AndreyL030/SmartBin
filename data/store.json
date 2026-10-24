@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-24T13:47:02.357Z",
+  "updatedAt": "2026-10-24T13:47:07.836Z",
   "products": {
     "eco": {
       "price": 24990
@@ -54,7 +54,20 @@
   ],
   "archive": {
     "orders": [],
-    "appeals": [],
-    "updatedAt": ""
+    "appeals": [
+      {
+        "uid": "msg-mvmgdlpv-3h2xnh",
+        "ref": "m1792832499977860",
+        "name": "",
+        "contact": "",
+        "device": "dgu8dd9",
+        "text": "чиясиясияс",
+        "reply": "",
+        "replyTs": "",
+        "createdAt": "2026-10-24T09:01:41.838Z",
+        "archivedAt": "2026-10-24T13:47:06.931Z"
+      }
+    ],
+    "updatedAt": "2026-10-24T13:47:06.931Z"
   }
 }
