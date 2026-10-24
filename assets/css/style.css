@@ -1518,3 +1518,134 @@ table.data td small { display: block; color: var(--text-muted); font-size: .78re
 @media (max-width: 720px) {
     .archive-bar .input { max-width: none; }
 }
+/* =========================================================
+   Дополнительные секции страницы товара (схема, датчики, почему так)
+   ========================================================= */
+.product-extra-sections {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+    margin-top: 10px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+}
+
+.product-section {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 20px 18px;
+}
+
+.product-section h2 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: .98rem;
+    font-weight: 700;
+    letter-spacing: -.01em;
+    margin-bottom: 12px;
+}
+
+.section-list { display: flex; flex-direction: column; gap: 9px; }
+
+.section-list li {
+    position: relative;
+    padding-left: 18px;
+    font-size: .89rem;
+    line-height: 1.45;
+    color: var(--text-muted);
+}
+
+.section-list li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: .58em;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--primary);
+    opacity: .5;
+}
+
+/* Якоря не прячутся под липкой шапкой */
+[id] { scroll-margin-top: calc(var(--header-h) + 16px); }
+
+/* Контраст вторичного текста на светлом фоне */
+:root { --text-muted: #5b6675; }
+/* Карточка товара: шапка с иконкой в одну строку */
+.product-detail { display: block; padding: 30px 34px; }
+.product-info { display: block; }
+
+.product-head {
+    display: flex;
+    gap: 22px;
+    align-items: flex-start;
+    margin-bottom: 4px;
+}
+
+.product-head-text { flex: 1 1 auto; min-width: 0; }
+
+.product-visual {
+    width: 96px;
+    height: 96px;
+    flex: 0 0 96px;
+    font-size: 3rem;
+    margin: 4px 0 0;
+}
+
+.product-visual::after { display: none; }
+
+@media (max-width: 620px) {
+    .product-head { flex-direction: column; gap: 14px; }
+    .product-visual { width: 76px; height: 76px; flex-basis: 76px; font-size: 2.4rem; }
+    .product-detail { padding: 22px; }
+}
+/* =========================================================
+   Полировка страницы товара (24.10.2026)
+   ========================================================= */
+.note-box { align-items: flex-start; line-height: 1.5; margin-bottom: 4px; }
+.note-box > div { max-width: 62ch; }
+
+.product-extra-sections {
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    margin-top: 28px;
+    padding-top: 26px;
+    align-items: stretch;
+}
+
+.product-section {
+    display: flex;
+    flex-direction: column;
+    transition: border-color .2s ease, background .2s ease, transform .2s ease;
+}
+
+.product-section:hover {
+    border-color: rgba(37, 99, 235, .25);
+    background: #ffffff;
+    transform: translateY(-2px);
+}
+
+.product-section h2 {
+    padding-bottom: 10px;
+    margin-bottom: 14px;
+    border-bottom: 1px dashed var(--border);
+}
+
+.section-list li { font-size: .88rem; }
+
+.product-head-text .card-badge { margin-bottom: 10px; }
+
+@media (max-width: 720px) {
+    .product-detail { padding: 18px; }
+    .product-head { gap: 14px; }
+    .product-visual { width: 72px; height: 72px; flex: 0 0 72px; font-size: 2.2rem; }
+    .product-extra-sections { margin-top: 22px; padding-top: 20px; }
+}
+/* Карточки каталога: цена и кнопки на одной линии при любом заголовке */
+.product-card h3 { min-height: 2.6em; }
+.product-card .card-meta { margin-top: auto; }
+.product-card .card-actions { margin-top: 14px; }
+.product-card .card-desc { margin-bottom: 12px; }

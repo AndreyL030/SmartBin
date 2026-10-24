@@ -67,12 +67,12 @@
                     title: 'Схема и развертки',
                     icon: '📐',
                     items: [
-                        'Габариты: 450 × 500 × 900 мм, полезный объём 72 л',
-                        'Четыре отсека по 18 л: пластик, стекло, бумага, органика',
+                        'Габариты: 520 × 460 × 960 мм, полезный объём 80 л',
+                        'Четыре отсека по 20 л: пластик, стекло, бумага, органика',
                         'Окно загрузки 280 × 110 мм на высоте 800 мм — уровень локтя',
                         'Дверь отсеков 400 × 390 мм, открывается на 100°',
                         'План отсеков с поворотом лотка: 0° / 90° / 180° / 270°',
-                        'Отсек 18 л — мешок на кольце, задний ряд одинаковый'
+                        'Отсек 20 л — мешок на кольце, задний ряд одинаковый'
                     ]
                 },
                 {
@@ -101,7 +101,7 @@
                         'Индуктивный датчик первым в цепочке: металл определяется до ML, точность ~97%',
                         'ToF в каждом отсеке видит перекос: урна сообщает не «60%», а «пластик 90%, бумага 20%»',
                         'Микрофон и NIR вынесены от сервоприводов; камера под углом — не ловит блик плёнки',
-                        'Отсеки 4 × 18 л = 72 л; ниже палубы — блок питания и электроника, центр тяжести внизу'
+                        'Отсеки 4 × 20 л = 80 л; ниже палубы — блок питания и электроника, центр тяжести внизу'
                     ]
                 }
             ]
@@ -777,11 +777,15 @@
         }).join('');
 
         root.innerHTML = '' +
-            '<div class="product-visual" aria-hidden="true">' + product.icon + '</div>' +
             '<div class="product-info">' +
-                badgeHtml(product) +
-                '<h1>' + escapeHtml(product.name) + '</h1>' +
-                '<p class="lead">' + escapeHtml(product.description) + '</p>' +
+                '<div class="product-head">' +
+                    '<div class="product-visual" aria-hidden="true">' + product.icon + '</div>' +
+                    '<div class="product-head-text">' +
+                        badgeHtml(product) +
+                        '<h1>' + escapeHtml(product.name) + '</h1>' +
+                        '<p class="lead">' + escapeHtml(product.description) + '</p>' +
+                    '</div>' +
+                '</div>' +
                 '<div class="product-price-row">' +
                     '<div class="price">' + formatPrice(product.price) + '</div>' +
                     '<span class="stock' + (product.inStock ? '' : ' stock--out') + '">' +
@@ -802,7 +806,7 @@
                     '<a class="btn btn--outline" href="cart.html">Перейти в корзину</a>' +
                 '</div>' +
                 '<div class="note-box"><span aria-hidden="true">🚚</span><div>Бесплатная доставка от ' +
-                    formatPrice(FREE_DELIVERY_FROM) + '. Гарантия и возврат — 14 дней с момента получения.</div></note-box>' +
+                    formatPrice(FREE_DELIVERY_FROM) + '. Гарантия и возврат — 14 дней с момента получения.</div></div>' +
                 '<table class="specs"><caption class="visually-hidden">Характеристики ' + escapeHtml(product.name) + '</caption><tbody>' +
                     specs + '</tbody></table>' +
             '</div>';
