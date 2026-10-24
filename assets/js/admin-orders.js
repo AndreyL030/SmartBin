@@ -26,6 +26,13 @@
     let orders = [];
     let loading = false;
 
+    function active() {
+        if (!window.SBArchive) return orders;
+        return orders.filter(function (order) {
+            return !SBArchive.isOrderArchived(order.id, 'remote');
+        });
+    }
+
     function esc(value) {
         return String(value == null ? '' : value).replace(/[&<>"']/g, function (ch) {
             return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch];
@@ -74,16 +81,20 @@
     function render() {
         if (!body) return;
 
-        if (!orders.length) {
+        const list = active();
+
+        if (!list.length) {
             body.innerHTML = '';
-            renderHint('<b>Заказов пока нет</b>Оформите заказ на сайте с любого устройства — он появится здесь.');
+            renderHint(orders.length
+                ? '<b>Все заказы разобраны</b>Убранные заказы лежат в разделе «Архив».'
+                : '<b>Заказов пока нет</b>Оформите заказ на сайте с любого устройства — он появится здесь.');
             return;
         }
 
         if (table) table.hidden = false;
         if (empty) empty.hidden = true;
 
-        body.innerHTML = orders.slice().reverse().map(function (order) {
+        body.innerHTML = list.slice().reverse().map(function (order) {
             const options = STATUSES.map(function (status) {
                 return '<option value="' + status.key + '"' +
                     ((order.status || 'new') === status.key ? ' selected' : '') + '>' + status.label + '</option>';
@@ -105,13 +116,17 @@
                     ? '<span class="pill pill--progress">из чата</span>'
                     : '<select class="status-select" data-order-id="' + esc(order.id) + '">' + options + '</select>') +
                 '</td>' +
+                '<td class="archive-actions">' + (order.legacy
+                    ? '<small>архив — в разделе «Обращения»</small>'
+                    : '<button class="btn btn--sm btn--ghost" type="button" data-archive-remote="' + esc(order.id) + '">В архив</button>') +
+                '</td>' +
             '</tr>';
         }).join('');
     }
 
     function updateBadge() {
         if (!badge) return;
-        const fresh = orders.filter(function (order) {
+        const fresh = active().filter(function (order) {
             return !order.legacy && (order.status || 'new') === 'new';
         }).length;
         badge.textContent = String(fresh);
@@ -181,6 +196,38 @@
     }
 
     if (body) {
+        body.addEventListener('click', function (event) {
+            const button = event.target.closest('[data-archive-remote]');
+            if (!button || !window.SBArchive) return;
+
+            const id = button.getAttribute('data-archive-remote');
+            const order = orders.find(function (item) { return String(item.id) === String(id); });
+            if (!order) return;
+
+            const record = SBArchive.archiveOrder({
+                source: 'remote',
+                ref: order.id,
+                number: order.number,
+                customer: order.name || '',
+                phone: order.phone || '',
+                items: order.items,
+                total: order.total,
+                status: order.status || 'new',
+                createdAt: order.ts,
+                payload: order
+            });
+
+            if (!record) {
+                toast('Уже в архиве', { type: 'info', text: 'Заказ ' + order.number + ' уже там.' });
+                return;
+            }
+
+            toast('Заказ в архиве', {
+                type: 'success',
+                text: 'Заказ ' + order.number + ' скрыт из работы. На сервере он остался.'
+            });
+        });
+
         body.addEventListener('change', function (event) {
             const select = event.target.closest('[data-order-id]');
             if (!select) return;
@@ -228,6 +275,16 @@
     });
 
     if (refreshBtn) refreshBtn.addEventListener('click', function () { load(true); });
+
+    document.addEventListener('sb:archive-changed', function () {
+        render();
+        updateBadge();
+    });
+
+    // Списком заказов пользуется раздел «Архив».
+    window.SBAdminOrders = {
+        raw: function () { return orders; }
+    };
 
     window.setInterval(function () {
         if (!panel.hidden) load(false);

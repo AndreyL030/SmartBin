@@ -5,11 +5,13 @@
 (function () {
     'use strict';
 
-    // Демо-гейт, а не аутентификация: в коде нет пароля в открытом виде,
-    // но любой, кто откроет исходники, всё равно сможет войти. Не защищайте
-    // этой панелью реальные данные.
-    const PASS_HASH = 0x56a4850f;
+    // Вход: пароль проверяется по хешу PBKDF2-HMAC-SHA256 (assets/js/admin-auth.js).
+    // Открытого пароля нет ни на странице, ни в коде.
     const SESSION_KEY = 'smartbin_admin_session';
+    const FAILS_KEY = 'smartbin_admin_fails';
+    const LOCK_KEY = 'smartbin_admin_lock_until';
+    const MAX_FAILS = 5;
+    const LOCK_MS = 60000;
     const OVERRIDES_KEY = 'smartbin_product_overrides_v1';
     const STATUS_KEY = 'smartbin_order_status_v1';
     const BINS_KEY = 'smartbin_bins_v1';
@@ -43,7 +45,9 @@
         orders: { title: 'Заказы', subtitle: 'Клиенты, суммы и статусы' },
         products: { title: 'Товары', subtitle: 'Цены и наличие на витрине' },
         bins: { title: 'Урны', subtitle: 'Заполнение отсеков по датчикам' },
-        sync: { title: 'Синхронизация', subtitle: 'Общие данные для всех устройств' }
+        sync: { title: 'Синхронизация', subtitle: 'Общие данные для всех устройств' },
+        archive: { title: 'Архив', subtitle: 'Выполненные заказы и обработанные обращения' },
+        access: { title: 'Доступ', subtitle: 'Пароль панели и правила входа' }
     };
 
     const loginEl = document.querySelector('[data-login]');
@@ -101,9 +105,27 @@
     }
 
     /* ---------- Данные ---------- */
-    function getOrders() {
+    function getStoredOrders() {
         const list = readJSON(ORDERS_KEY, []);
         return Array.isArray(list) ? list : [];
+    }
+
+    // Рабочий список: заказы, ушедшие в архив, в нём не показываем.
+    function getOrders() {
+        const list = getStoredOrders();
+        if (!window.SBArchive) return list;
+        return list.filter(function (order) {
+            return !SBArchive.isOrderArchived(order.number, 'local');
+        });
+    }
+
+    function pruneArchivedOrders() {
+        if (!window.SBArchive) return;
+        const stored = getStoredOrders();
+        const kept = stored.filter(function (order) {
+            return !SBArchive.isOrderArchived(order.number, 'local');
+        });
+        if (kept.length !== stored.length) writeJSON(ORDERS_KEY, kept);
     }
 
     function getStatuses() {
@@ -131,13 +153,31 @@
     }
 
     /* ---------- Вход ---------- */
-    function hashPass(text) {
-        let hash = 0x811c9dc5;
-        for (let i = 0; i < text.length; i += 1) {
-            hash ^= text.charCodeAt(i);
-            hash = Math.imul(hash, 0x01000193) >>> 0;
+    function lockLeft() {
+        let until = 0;
+        try { until = Number(sessionStorage.getItem(LOCK_KEY) || 0); } catch (err) { until = 0; }
+        const left = until - Date.now();
+        return left > 0 ? left : 0;
+    }
+
+    function failsCount() {
+        try { return Number(sessionStorage.getItem(FAILS_KEY) || 0); } catch (err) { return 0; }
+    }
+
+    function setFails(value) {
+        try { sessionStorage.setItem(FAILS_KEY, String(value)); } catch (err) { /* ignore */ }
+    }
+
+    function showLock(left) {
+        const note = document.querySelector('[data-login-lock]');
+        if (!note) return;
+        if (!left) {
+            note.hidden = true;
+            note.textContent = '';
+            return;
         }
-        return hash >>> 0;
+        note.hidden = false;
+        note.textContent = 'Слишком много попыток. Следующая попытка через ' + Math.ceil(left / 1000) + ' с.';
     }
 
     function showPanel() {
@@ -168,21 +208,58 @@
             const field = passInput.closest('.field');
             const value = passInput.value.trim();
 
-            if (hashPass(value.toLowerCase()) !== PASS_HASH) {
-                if (field) field.classList.add('has-error');
-                toast('Неверный пароль', {
-                    type: 'error',
-                    text: 'Демо-доступ: пароль smartbin'
-                });
-                passInput.focus();
+            if (lockLeft()) {
+                showLock(lockLeft());
                 return;
             }
 
-            if (field) field.classList.remove('has-error');
-            try { sessionStorage.setItem(SESSION_KEY, '1'); } catch (err) { /* приватный режим */ }
-            passInput.value = '';
-            showPanel();
-            toast('Добро пожаловать', { type: 'success', text: 'Панель открыта. Данные — только из этого браузера.' });
+            const button = loginForm.querySelector('button[type="submit"]');
+            const label = button ? button.textContent : '';
+            if (button) {
+                button.disabled = true;
+                button.textContent = 'Проверяю…';
+            }
+
+            // PBKDF2 считает ~0,5 с — не блокируем отрисовку.
+            window.setTimeout(function () {
+                const ok = window.SBAdminAuth ? SBAdminAuth.verify(value) : false;
+                if (button) {
+                    button.disabled = false;
+                    button.textContent = label;
+                }
+
+                if (!ok) {
+                    const fails = failsCount() + 1;
+                    if (fails >= MAX_FAILS) {
+                        try { sessionStorage.setItem(LOCK_KEY, String(Date.now() + LOCK_MS)); } catch (err) { /* ignore */ }
+                        setFails(0);
+                        showLock(LOCK_MS);
+                        toast('Вход заблокирован', {
+                            type: 'error',
+                            text: 'Пять неверных попыток. Подождите минуту.'
+                        });
+                    } else {
+                        setFails(fails);
+                        toast('Неверный пароль', {
+                            type: 'error',
+                            text: 'Осталось попыток: ' + (MAX_FAILS - fails) + '.',
+                            duration: 3200
+                        });
+                    }
+
+                    if (field) field.classList.add('has-error');
+                    passInput.focus();
+                    return;
+                }
+
+                if (field) field.classList.remove('has-error');
+                setFails(0);
+                showLock(0);
+                try { sessionStorage.setItem(SESSION_KEY, '1'); } catch (err) { /* приватный режим */ }
+                passInput.value = '';
+                showPanel();
+                toast('Добро пожаловать', { type: 'success', text: 'Панель открыта. Данные — из этого браузера.' });
+            }, 30);
         });
 
         passInput.addEventListener('input', function () {
@@ -214,6 +291,10 @@
 
         titleEl.textContent = VIEWS[name].title;
         subtitleEl.textContent = VIEWS[name].subtitle;
+
+        try {
+            document.dispatchEvent(new CustomEvent('sb:view', { detail: { view: name } }));
+        } catch (err) { /* старые браузеры без CustomEvent */ }
 
         if (name === 'overview') renderOverview();
         if (name === 'orders') renderOrders();
@@ -343,6 +424,9 @@
                 '<td>' + count + ' шт</td>' +
                 '<td><b>' + money(order.total) + '</b></td>' +
                 '<td><select class="status-select" data-status="' + escapeHtml(order.number) + '">' + options + '</select></td>' +
+                '<td class="archive-actions">' +
+                    '<button class="btn btn--sm btn--ghost" type="button" data-archive-order="' + escapeHtml(order.number) + '">В архив</button>' +
+                '</td>' +
             '</tr>';
         }).join('');
 
@@ -361,6 +445,41 @@
             writeJSON(STATUS_KEY, statuses);
             const label = (STATUSES.find(function (s) { return s.key === select.value; }) || STATUSES[0]).label;
             toast('Статус обновлён', { type: 'success', text: 'Заказ переведён в «' + label + '».', duration: 3000 });
+        });
+
+        ordersBody.addEventListener('click', function (event) {
+            const button = event.target.closest('[data-archive-order]');
+            if (!button || !window.SBArchive) return;
+
+            const number = button.getAttribute('data-archive-order');
+            const order = getStoredOrders().find(function (item) {
+                return String(item.number) === String(number);
+            });
+            if (!order) return;
+
+            const customer = order.customer || {};
+            const record = SBArchive.archiveOrder({
+                source: 'local',
+                ref: order.number,
+                number: order.number,
+                customer: customer.name || '',
+                phone: customer.phone || '',
+                items: order.items,
+                total: order.total,
+                status: (getStatuses()[order.number] || 'new'),
+                createdAt: order.createdAt,
+                payload: order
+            });
+
+            if (!record) {
+                toast('Уже в архиве', { type: 'info', text: 'Заказ ' + order.number + ' уже там.' });
+                return;
+            }
+
+            toast('Заказ в архиве', {
+                type: 'success',
+                text: 'Заказ ' + order.number + ' убран из работы. Вернуть — в разделе «Архив».'
+            });
         });
     }
 
@@ -640,13 +759,16 @@
     }
 
     function buildPayload() {
-        return {
+        const payload = {
             updatedAt: new Date().toISOString(),
             products: getOverrides(),
             orders: getOrders(),
             orderStatuses: getStatuses(),
             bins: getBins()
         };
+
+        if (window.SBArchive) payload.archive = SBArchive.read();
+        return payload;
     }
 
     function schedulePush() {
@@ -721,6 +843,7 @@
                 if (Array.isArray(shared.orders)) localStorage.setItem(ORDERS_KEY, JSON.stringify(shared.orders));
                 if (shared.orderStatuses) localStorage.setItem(STATUS_KEY, JSON.stringify(shared.orderStatuses));
                 if (Array.isArray(shared.bins) && shared.bins.length) localStorage.setItem(BINS_KEY, JSON.stringify(shared.bins));
+                if (shared.archive && window.SBArchive) SBArchive.replace(shared.archive);
             } catch (err) {
                 /* хранилище недоступно — показываем то, что уже есть */
             }
@@ -771,6 +894,29 @@
     const syncPushBtn = document.querySelector('[data-sync-push]');
     if (syncPushBtn) syncPushBtn.addEventListener('click', function () { pushNow(true); });
 
+    /* ---------- Архив ---------- */
+    document.addEventListener('sb:archive-changed', function () {
+        pruneArchivedOrders();
+        renderOrders();
+        renderOverview();
+        schedulePush();
+    });
+
+    document.addEventListener('sb:orders-restored', function () {
+        renderOrders();
+        renderOverview();
+        schedulePush();
+    });
+
+    // Другим разделам панели нужен доступ к тем же данным.
+    window.SBAdminData = {
+        getOrders: getOrders,
+        getStatuses: getStatuses,
+        refresh: function () {
+            renderAll();
+        }
+    };
+
     /* ---------- Запуск ---------- */
     function renderAll() {
         renderOverview();
@@ -789,4 +935,10 @@
         showLogin();
         if (passInput) passInput.focus();
     }
+
+    // Пока идёт блокировка, показываем обратный отсчёт.
+    window.setInterval(function () {
+        if (!loginEl || loginEl.hidden) return;
+        showLock(lockLeft());
+    }, 1000);
 })();

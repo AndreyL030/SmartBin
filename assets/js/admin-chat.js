@@ -18,6 +18,13 @@
     let messages = [];
     let loading = false;
 
+    function active() {
+        if (!window.SBArchive) return messages;
+        return messages.filter(function (message) {
+            return !SBArchive.isAppealArchived(message.id);
+        });
+    }
+
     function escapeHtml(value) {
         return String(value == null ? '' : value).replace(/[&<>"']/g, function (ch) {
             return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch];
@@ -54,18 +61,22 @@
     function render() {
         if (!listEl) return;
 
-        if (!messages.length) {
+        const list = active();
+
+        if (!list.length) {
             listEl.innerHTML = '';
             if (emptyEl) {
                 emptyEl.hidden = false;
-                emptyEl.innerHTML = '<b>Обращений пока нет</b>Напишите что-нибудь в чат на странице поддержки с другого устройства — сообщение появится здесь.';
+                emptyEl.innerHTML = messages.length
+                    ? '<b>Все обращения разобраны</b>Отвеченные сообщения лежат в разделе «Архив».'
+                    : '<b>Обращений пока нет</b>Напишите что-нибудь в чат на странице поддержки с другого устройства — сообщение появится здесь.';
             }
             return;
         }
 
         if (emptyEl) emptyEl.hidden = true;
 
-        listEl.innerHTML = messages.slice().reverse().map(function (message) {
+        listEl.innerHTML = list.slice().reverse().map(function (message) {
             const head = '<div class="chat-item__head">' +
                 '<b>' + (escapeHtml(message.name) || 'Гость') + '</b>' +
                 '<span>' + escapeHtml(formatDate(message.ts)) +
@@ -85,16 +96,32 @@
                     '<button class="btn btn--sm" type="submit">Отправить</button>' +
                   '</form>';
 
-            return '<article class="chat-item">' + head + body + replyBlock + '</article>';
+            const actions = message.id
+                ? '<div class="archive-actions">' +
+                    '<button class="btn btn--sm btn--ghost" type="button" data-archive-appeal="' + escapeHtml(message.id) + '">В архив</button>' +
+                  '</div>'
+                : '';
+
+            return '<article class="chat-item">' + head + body + replyBlock + actions + '</article>';
         }).join('');
     }
 
     function updateBadge() {
         if (!badge) return;
-        const unread = messages.filter(function (message) { return !message.reply; }).length;
+        const unread = active().filter(function (message) { return !message.reply; }).length;
         badge.textContent = String(unread);
         badge.hidden = unread === 0;
     }
+
+    document.addEventListener('sb:archive-changed', function () {
+        render();
+        updateBadge();
+    });
+
+    // Списком сообщений пользуется раздел «Архив».
+    window.SBAdminChat = {
+        raw: function () { return messages; }
+    };
 
     function showHint() {
         if (!emptyEl || !listEl) return;
@@ -146,6 +173,27 @@
     }
 
     if (listEl) {
+        listEl.addEventListener('click', function (event) {
+            const button = event.target.closest('[data-archive-appeal]');
+            if (!button || !window.SBArchive) return;
+
+            const id = button.getAttribute('data-archive-appeal');
+            const message = messages.find(function (item) { return String(item.id) === String(id); });
+            if (!message) return;
+
+            if (!SBArchive.archiveAppeal(message)) {
+                toast('Уже в архиве', { type: 'info', text: 'Это обращение уже перенесено.' });
+                return;
+            }
+
+            render();
+            updateBadge();
+            toast('Обращение в архиве', {
+                type: 'success',
+                text: 'Сообщение убрано из ленты. Вернуть — в разделе «Архив».'
+            });
+        });
+
         listEl.addEventListener('submit', function (event) {
             const form = event.target.closest('[data-reply-form]');
             if (!form) return;

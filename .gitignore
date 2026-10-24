@@ -13,3 +13,10 @@ desktop.ini
 .tmp/
 .build/
 .zwork/
+
+# Пароль админки хранится только на этой машине
+admin-password.local.txt
+*.local.*
+
+# Временные файлы КОМПАС
+~$*

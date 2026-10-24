@@ -32,7 +32,7 @@
         </div>
 
         <h1>Вход в панель</h1>
-        <p>Демо-доступ: пароль <b>smartbin</b>. Данные сохраняются только в этом браузере.</p>
+        <p>Доступ только по паролю владельца. Пароль не показывается на странице и хранится в виде хеша.</p>
 
         <form data-login-form novalidate style="margin-top:20px">
             <div class="field">
@@ -43,7 +43,8 @@
             <button class="btn btn--grad btn--block" type="submit">Войти</button>
         </form>
 
-        <p class="admin-login__note">Сайт статический: настоящей аутентификации нет. Пароль скрывает интерфейс, но не защищает данные — не используйте панель для реальных заказов.</p>
+        <p class="admin-login__note" data-login-lock hidden></p>
+        <p class="admin-login__note">Пароль меняется внутри панели, в разделе «Доступ». Сайт статический: панель закрывает интерфейс, но не заменяет серверную авторизацию.</p>
         <p class="admin-login__note"><a href="index.html" style="color:var(--primary);font-weight:600">← Вернуться на сайт</a></p>
     </div>
 </div>
@@ -76,6 +77,8 @@
             <button type="button" data-view="bins">🗑️ Урны</button>
             <button type="button" data-view="sync">🔄 Синхронизация</button>
             <button type="button" data-view="chat">💬 Обращения <span class="pill pill--danger" data-chat-badge hidden>0</span></button>
+            <button type="button" data-view="archive">🗃️ Архив <span class="pill pill--new" data-archive-badge hidden>0</span></button>
+            <button type="button" data-view="access">🔐 Доступ</button>
         </nav>
 
         <div class="admin-sidebar__foot">
@@ -90,7 +93,7 @@
                 <h1 data-title>Обзор</h1>
                 <p data-subtitle>Заказы, выручка и состояние урн</p>
             </div>
-            <span class="admin-demo-badge">демо-данные в браузере</span>
+            <span class="admin-demo-badge">данные в этом браузере</span>
         </div>
 
         <!-- ---------- Обзор ---------- -->
@@ -174,7 +177,7 @@
                 <div class="table-scroll">
                     <table class="data">
                         <thead>
-                            <tr><th>Номер</th><th>Дата</th><th>Клиент</th><th>Товары</th><th>Сумма</th><th>Статус</th></tr>
+                            <tr><th>Номер</th><th>Дата</th><th>Клиент</th><th>Товары</th><th>Сумма</th><th>Статус</th><th></th></tr>
                         </thead>
                         <tbody data-orders-body></tbody>
                     </table>
@@ -304,7 +307,7 @@
                 <div class="table-scroll" data-orders-remote-table>
                     <table class="data">
                         <thead>
-                            <tr><th>Заказ</th><th>Дата</th><th>Клиент</th><th>Товары</th><th>Сумма</th><th>Статус</th></tr>
+                            <tr><th>Заказ</th><th>Дата</th><th>Клиент</th><th>Товары</th><th>Сумма</th><th>Статус</th><th></th></tr>
                         </thead>
                         <tbody data-orders-remote-body></tbody>
                     </table>
@@ -315,6 +318,95 @@
                 Заказы приходят с любого устройства, где оформлен заказ. Статус меняется здесь и сохраняется на сервере.
             </p>
         </section>
+
+        <!-- ---------- Архив ---------- -->
+        <section data-panel="archive" hidden>
+            <div class="table-wrap">
+                <div class="table-wrap__head">
+                    <h2>Архив заказов и обращений</h2>
+                    <div class="admin-actions">
+                        <button class="btn btn--sm btn--outline" type="button" data-archive-bulk>Выполненные заказы → в архив</button>
+                        <button class="btn btn--sm btn--ghost" type="button" data-archive-csv>Экспорт CSV</button>
+                        <button class="btn btn--sm btn--ghost" type="button" data-archive-json>Экспорт JSON</button>
+                        <button class="btn btn--sm btn--ghost archive-danger" type="button" data-archive-clear>Очистить</button>
+                    </div>
+                </div>
+
+                <div class="archive-bar">
+                    <div class="archive-tabs" role="tablist" aria-label="Что в архиве">
+                        <button type="button" role="tab" data-archive-tab="orders" aria-selected="true">
+                            Заказы <span class="pill pill--new" data-archive-count-orders>0</span>
+                        </button>
+                        <button type="button" role="tab" data-archive-tab="appeals" aria-selected="false">
+                            Обращения <span class="pill pill--new" data-archive-count-appeals>0</span>
+                        </button>
+                    </div>
+                    <input class="input" type="search" data-archive-search placeholder="Поиск: номер, клиент, телефон, текст" aria-label="Поиск по архиву">
+                </div>
+
+                <div class="table-scroll" data-archive-orders-wrap>
+                    <table class="data">
+                        <thead>
+                            <tr><th>Заказ</th><th>Клиент</th><th>Сумма</th><th>Статус</th><th>В архиве с</th><th>Действия</th></tr>
+                        </thead>
+                        <tbody data-archive-orders></tbody>
+                    </table>
+                </div>
+                <div class="admin-empty" data-archive-orders-empty hidden></div>
+
+                <div data-archive-appeals hidden></div>
+                <div class="admin-empty" data-archive-appeals-empty hidden></div>
+            </div>
+            <p class="admin-hint">
+                Архив живёт в этом браузере и вместе с остальными данными уходит в <code>data/store.json</code>, когда включена синхронизация.
+                Записи можно вернуть в работу или удалить безвозвратно.
+            </p>
+        </section>
+
+        <!-- ---------- Доступ ---------- -->
+        <section data-panel="access" hidden>
+            <div class="table-wrap">
+                <div class="table-wrap__head">
+                    <h2>Пароль панели</h2>
+                    <span class="pill pill--new" data-access-state>встроенный пароль</span>
+                </div>
+                <div class="pane-pad">
+                    <p class="admin-hint" style="margin:0 0 16px">
+                        Пароль хранится только как хеш PBKDF2-HMAC-SHA256: встроенный — константой в
+                        <code>assets/js/admin-auth.js</code>, свой — в этом браузере. Открытого пароля нет ни на странице, ни в коде.
+                    </p>
+
+                    <form data-access-form novalidate>
+                        <div class="form-grid">
+                            <div class="field field--full">
+                                <label for="accessCurrent">Текущий пароль</label>
+                                <input class="input" id="accessCurrent" type="password" autocomplete="current-password" data-access-current>
+                            </div>
+                            <div class="field">
+                                <label for="accessNew">Новый пароль</label>
+                                <input class="input" id="accessNew" type="password" autocomplete="new-password" data-access-new placeholder="от 10 символов">
+                            </div>
+                            <div class="field">
+                                <label for="accessRepeat">Повтор нового</label>
+                                <input class="input" id="accessRepeat" type="password" autocomplete="new-password" data-access-repeat>
+                            </div>
+                        </div>
+
+                        <p class="form-error" data-access-error hidden></p>
+
+                        <div class="admin-actions">
+                            <button class="btn btn--sm btn--grad" type="submit">Сохранить пароль</button>
+                            <button class="btn btn--sm btn--outline" type="button" data-access-reset>Вернуть встроенный</button>
+                        </div>
+                    </form>
+
+                    <p class="admin-hint">
+                        Свой пароль действует только в этом браузере; на другом устройстве работает встроенный.
+                        Сессия живёт до закрытия вкладки, после 5 неверных попыток вход блокируется на минуту.
+                    </p>
+                </div>
+            </div>
+        </section>
     </main>
 </div>
 
@@ -324,8 +416,12 @@
 <script src="assets/js/sync-fresh.js"></script>
 <script src="assets/js/chat.js"></script>
 <script src="assets/js/app.js"></script>
+<script src="assets/js/archive-store.js"></script>
+<script src="assets/js/admin-auth.js"></script>
 <script src="assets/js/admin.js"></script>
 <script src="assets/js/admin-chat.js"></script>
 <script src="assets/js/admin-orders.js"></script>
+<script src="assets/js/admin-archive.js"></script>
+<script src="assets/js/admin-access.js"></script>
 </body>
 </html>
